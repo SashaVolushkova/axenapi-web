@@ -1,0 +1,157 @@
+{
+  "name": "order_service&emp_service&check_service",
+  "nodes": [
+    {
+      "id": "6bf743fb-7c5f-4e53-b6b1-f247044b89e7",
+      "belongsToGraph": [
+        "order_service"
+      ],
+      "name": "order_service",
+      "type": "SERVICE",
+      "brokerType": null
+    },
+    {
+      "id": "a2259b3e-ec02-44d1-b209-f225ba4797f0",
+      "belongsToGraph": [
+        "order_service"
+      ],
+      "name": "order_topic",
+      "type": "TOPIC",
+      "brokerType": null
+    },
+    {
+      "id": "8233caa5-d844-46dd-8a92-719cc3e71aa2",
+      "belongsToGraph": [
+        "order_service"
+      ],
+      "name": "check_topic",
+      "type": "TOPIC",
+      "brokerType": "KAFKA"
+    },
+    {
+      "id": "00575a9c-00b9-4ae4-9946-f2f5edce8c78",
+      "belongsToGraph": [
+        "emp_service"
+      ],
+      "name": "emp_service",
+      "type": "SERVICE",
+      "brokerType": null
+    },
+    {
+      "id": "aa3e5bcc-2b8f-4eae-9c64-960055ab2a5a",
+      "belongsToGraph": [
+        "emp_service"
+      ],
+      "name": "check_topic",
+      "type": "TOPIC",
+      "brokerType": "KAFKA"
+    },
+    {
+      "id": "52853290-8bbd-413b-8aa0-f7d5dbb0647b",
+      "belongsToGraph": [
+        "emp_service"
+      ],
+      "name": "emp_topic",
+      "type": "TOPIC",
+      "brokerType": null
+    },
+    {
+      "id": "7a146b9d-866d-4485-a3ff-b1e3da08c4af",
+      "belongsToGraph": [
+        "check_service"
+      ],
+      "name": "check_service",
+      "type": "SERVICE",
+      "brokerType": null
+    },
+    {
+      "id": "fbbc1f1f-721c-431f-966b-bb731010ecaa",
+      "belongsToGraph": [
+        "check_service"
+      ],
+      "name": "order_topic",
+      "type": "TOPIC",
+      "brokerType": "KAFKA"
+    },
+    {
+      "id": "4cf0d25b-4be8-4649-a43d-45cf763fddab",
+      "belongsToGraph": [
+        "check_service"
+      ],
+      "name": "emp_topic",
+      "type": "TOPIC",
+      "brokerType": "KAFKA"
+    },
+    {
+      "id": "51a289e1-7139-4bf5-bc69-998b06afba98",
+      "belongsToGraph": [
+        "check_service"
+      ],
+      "name": "check_topic",
+      "type": "TOPIC",
+      "brokerType": null
+    }
+  ],
+  "events": {
+    "Order": {
+      "id": "5be9ff7b-120f-4328-8f34-668272de694f",
+      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"id\" : {\r\n      \"type\" : \"string\",\r\n      \"format\" : \"uuid\"\r\n    }\r\n  },\r\n  \"description\" : \"order message\",\r\n  \"x-incoming\" : {\r\n    \"topics\" : [ \"order_topic\" ]\r\n  }\r\n}",
+      "name": "Order"
+    },
+    "Check": {
+      "id": "17930878-51c5-4fbc-b978-80d54dae037c",
+      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"id\" : {\r\n      \"type\" : \"string\",\r\n      \"format\" : \"uuid\"\r\n    }\r\n  },\r\n  \"description\" : \"check message\",\r\n  \"x-outgoing\" : {\r\n    \"topics\" : [ \"check_topic\" ],\r\n    \"types\" : [ \"Message\", \"nmnmnm\", \"kljkljkl\" ],\r\n    \"tags\" : [ \"abcde\", \"outg\" ]\r\n  }\r\n}",
+      "name": "Check"
+    },
+    "Emp": {
+      "id": "198de403-e066-4cc9-978b-9e44a4d2652b",
+      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"name\" : {\r\n      \"type\" : \"string\"\r\n    }\r\n  },\r\n  \"description\" : \"emp message\",\r\n  \"x-incoming\" : {\r\n    \"topics\" : [ \"emp_topic\" ]\r\n  }\r\n}",
+      "name": "Emp"
+    }
+  },
+  "links": [
+    {
+      "fromId": "6bf743fb-7c5f-4e53-b6b1-f247044b89e7",
+      "toId": "a2259b3e-ec02-44d1-b209-f225ba4797f0",
+      "eventId": "5be9ff7b-120f-4328-8f34-668272de694f",
+      "group": "order_service"
+    },
+    {
+      "fromId": "6bf743fb-7c5f-4e53-b6b1-f247044b89e7",
+      "toId": "8233caa5-d844-46dd-8a92-719cc3e71aa2",
+      "eventId": "17930878-51c5-4fbc-b978-80d54dae037c",
+      "group": "order_service"
+    },
+    {
+      "fromId": "00575a9c-00b9-4ae4-9946-f2f5edce8c78",
+      "toId": "52853290-8bbd-413b-8aa0-f7d5dbb0647b",
+      "eventId": "198de403-e066-4cc9-978b-9e44a4d2652b",
+      "group": "emp_service"
+    },
+    {
+      "fromId": "00575a9c-00b9-4ae4-9946-f2f5edce8c78",
+      "toId": "aa3e5bcc-2b8f-4eae-9c64-960055ab2a5a",
+      "eventId": "17930878-51c5-4fbc-b978-80d54dae037c",
+      "group": "emp_service"
+    },
+    {
+      "fromId": "7a146b9d-866d-4485-a3ff-b1e3da08c4af",
+      "toId": "fbbc1f1f-721c-431f-966b-bb731010ecaa",
+      "eventId": "5be9ff7b-120f-4328-8f34-668272de694f",
+      "group": "check_service"
+    },
+    {
+      "fromId": "7a146b9d-866d-4485-a3ff-b1e3da08c4af",
+      "toId": "4cf0d25b-4be8-4649-a43d-45cf763fddab",
+      "eventId": "198de403-e066-4cc9-978b-9e44a4d2652b",
+      "group": "check_service"
+    },
+    {
+      "fromId": "7a146b9d-866d-4485-a3ff-b1e3da08c4af",
+      "toId": "51a289e1-7139-4bf5-bc69-998b06afba98",
+      "eventId": "17930878-51c5-4fbc-b978-80d54dae037c",
+      "group": "check_service"
+    }
+  ],
+  "errors": []
+}
