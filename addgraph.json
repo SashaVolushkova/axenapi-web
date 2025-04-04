@@ -1,0 +1,36 @@
+{
+  "name": "graph2",
+  "nodes": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "SERVICE",  
+      "name": "Start Node(SERVICE2)"
+    },
+    {
+      "id": "b1072f9e-2f92-41de-93f6-65762e567f5a",
+      "type": "SERVICE",  
+      "name": "End (SERVICE2)"
+    }
+  ],
+  "events": {
+    "event5": {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "Event 5",
+      "schema": "Schema 5"
+    },
+    "event6": {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "Event 6",
+      "schema": "Schema 6"
+    }
+  },
+  "links": [
+    {
+      "fromId": "550e8400-e29b-41d4-a716-446655440000",
+      "toId": "b1072f9e-2f92-41de-93f6-65762e567f5a",
+      "group": "Group B",
+      "eventId": "550e8400-e29b-41d4-a716-446655440001"
+    }
+  ],
+  "errors": []
+}
