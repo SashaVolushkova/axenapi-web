@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            name "git verse"
+            url "https://mvn-mirror.gitverse.ru"
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'axenapi-web'
+
