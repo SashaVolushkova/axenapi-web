@@ -1,0 +1,31 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Start Node(SERVICE2)",
+    "description" : "API specification for Start Node(SERVICE2)",
+    "version" : "1.0.0"
+  },
+  "paths" : {
+    "/Group B/b1072f9e-2f92-41de-93f6-65762e567f5a/550e8400-e29b-41d4-a716-446655440001" : {
+      "description" : "Operation for event 550e8400-e29b-41d4-a716-446655440001",
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EventSchema"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "EventSchema" : {
+        "type" : "string"
+      }
+    }
+  }
+}
