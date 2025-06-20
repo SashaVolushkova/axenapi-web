@@ -1,0 +1,100 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "consume_one_event_service",
+    "description" : "AxenAPI Specification for consume_one_event_service",
+    "version" : "1.0.0"
+  },
+  "paths" : {
+    "/events/{eventId}" : {
+      "summary" : "Retrieve a specific event by ID",
+      "description" : "Description of the HTTP node",
+      "get" : {
+        "tags" : [ "HTTP" ],
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "ID of the event to retrieve",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Event1"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Event not found"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "HTTP" ],
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "ID of the event to retrieve",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Event1"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Event not found"
+          }
+        }
+      }
+    },
+    "/kafka/group1/topic1/Event1" : {
+      "post" : {
+        "tags" : [ "HTTP" ],
+        "responses" : {
+          "200" : {
+            "description" : "Event sent successfully"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Event1" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "Unique identifier for the event"
+          },
+          "data" : {
+            "type" : "object",
+            "description" : "Payload of the event"
+          }
+        },
+        "x-incoming" : {
+          "topics" : [ "topic1" ],
+          "tags" : [ "HTTP" ]
+        },
+        "x-http-name" : "/events/{eventId}"
+      }
+    }
+  }
+}
