@@ -1,0 +1,85 @@
+{
+  "name": "HTTP Test Service",
+  "nodes": [
+    {
+      "id": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "nodeDescription": null,
+      "nodeUrl": null,
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "HTTP Test Service",
+      "type": "SERVICE",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": null,
+      "tags": [],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
+      "nodeDescription": null,
+      "nodeUrl": "/api/users",
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "/api/users",
+      "type": "HTTP",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": "POST",
+      "tags": [],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "6bd7062e-0afa-4c84-a26d-f1b072fa2f51",
+      "nodeDescription": null,
+      "nodeUrl": "/api/data",
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "/api/data",
+      "type": "HTTP",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": "GET",
+      "tags": [],
+      "documentationFileLinks": []
+    }
+  ],
+  "events": [
+    {
+      "id": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "schema": "{\r\n  \"required\" : [ \"email\", \"name\" ],\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"name\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"email\" : {\r\n      \"type\" : \"string\"\r\n    }\r\n  }\r\n}",
+      "name": "CreateUserRequest",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null
+    },
+    {
+      "id": "518afd8e-85a6-4539-9316-e986f0e96fee",
+      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"data\" : {\r\n      \"type\" : \"array\",\r\n      \"items\" : {\r\n        \"type\" : \"string\"\r\n      }\r\n    }\r\n  }\r\n}",
+      "name": "DataResponse",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null
+    }
+  ],
+  "links": [
+    {
+      "id": "d839b3b0-d799-4f0c-875f-cfe9cefdf95f",
+      "fromId": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
+      "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "group": null,
+      "eventId": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "tags": []
+    },
+    {
+      "id": "e839b3b0-d799-4f0c-875f-cfe9cefdf95e",
+      "fromId": "6bd7062e-0afa-4c84-a26d-f1b072fa2f51",
+      "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "group": null,
+      "eventId": "518afd8e-85a6-4539-9316-e986f0e96fee",
+      "tags": []
+    }
+  ],
+  "errors": [],
+  "tags": []
+}
