@@ -1,0 +1,43 @@
+{
+  "name": "http_request_processing_service",
+  "nodes": [
+    {
+      "id": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "http_request_processing_service",
+      "type": "SERVICE",
+      "brokerType": null,
+      "tags": ["HTTP"]
+    },
+    {
+      "id": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "/api/users/{userId}",
+      "type": "HTTP",
+      "brokerType": null,
+      "methodType": "GET",
+      "nodeUrl": "/api/users/{userId}",
+      "nodeDescription": "Retrieve user information by user ID",
+      "tags": ["HTTP"]
+    }
+  ],
+  "links": [
+    {
+      "id": "d839b3b0-d799-4f0c-875f-cfe9cefdf95f",
+      "fromId": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
+      "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "group": null,
+      "eventId": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "tags": []
+    }
+  ],
+  "events": [
+    {
+      "id": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "name": "User",
+      "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Unique identifier for the user\"\n    },\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Name of the user\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Email address of the user\"\n    }\n  }\n}"
+    }
+  ],
+  "errors": [],
+  "tags": ["HTTP"]
+}
