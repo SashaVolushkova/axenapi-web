@@ -1,0 +1,280 @@
+{
+  "name": "service_no_common_consume_topics_common_events_common_outgoing_topics_2&service_no_common_consume_topics_common_events_common_outgoing_topics_1",
+  "tags": ["commonOutgoingTag",
+    "commonTag",
+    "rabbitService2",
+    "service1",
+    "service2",
+    "tagKafkaConsume1",
+    "tagKafkaConsume2",
+    "topicConsumeJMS_1",
+    "topicConsumeJMS_2",
+    "topicConsumeKafka_1",
+    "topicConsumeKafka_2"],
+
+  "nodes": [
+    {
+      "id": "78b5576b-b548-4734-9d95-025a22965321",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "rabbitService2",
+      "type": "TOPIC",
+      "brokerType": "RABBITMQ",
+      "tags": ["commonOutgoingTag","rabbitService2"]
+    },
+    {
+      "id": "9cd5abde-6500-4811-ab74-e759d545a689",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "kafkaService2",
+      "type": "TOPIC",
+      "brokerType": "KAFKA"
+    },
+    {
+      "id": "996cb100-7ad2-4c22-9206-df13b2afa752",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "commonConsumeKafka",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "tags": ["tagKafkaConsume1", "commonTag", "tagKafkaConsume2"]
+    },
+    {
+      "id": "12345678-90ab-cdef-1234-567890abcdef",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
+      "name": "service_no_common_consume_topics_common_events_common_outgoing_topics_1",
+      "type": "SERVICE",
+      "brokerType": null,
+      "tags": ["topicConsumeJMS_1", "commonOutgoingTag","service1", "tagKafkaConsume1", "commonTag", "topicConsumeKafka_1"]
+    },
+    {
+      "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "service_no_common_consume_topics_common_events_common_outgoing_topics_2",
+      "type": "SERVICE",
+      "brokerType": null,
+      "tags": ["tagKafkaConsume2", "commonTag", "topicConsumeKafka_2", "topicConsumeJMS_2", "commonOutgoingTag","service2", "rabbitService2"]
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef03",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
+      "name": "topicConsumeKafka_1",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "tags": ["topicConsumeKafka_1"]
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef04",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "topicConsumeKafka_2",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "tags": ["topicConsumeKafka_2"]
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef05",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
+      "name": "topicConsumeRabbitMQ_1",
+      "type": "TOPIC",
+      "brokerType": "RABBITMQ"
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef06",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "topicConsumeRabbitMQ_2",
+      "type": "TOPIC",
+      "brokerType": "RABBITMQ"
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef07",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
+      "name": "topicConsumeJMS_1",
+      "type": "TOPIC",
+      "brokerType": "JMS",
+      "tags": ["topicConsumeJMS_1"]
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef08",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "topicConsumeJMS_2",
+      "type": "TOPIC",
+      "brokerType": "JMS",
+      "tags": ["topicConsumeJMS_2"]
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef09",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "topicOutKafka",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "tags": ["commonOutgoingTag","service2"]
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef10",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "topicOutRabbitMQ",
+      "type": "TOPIC",
+      "brokerType": "RABBITMQ",
+      "tags": ["commonOutgoingTag","service2", "service1"]
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef11",
+      "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "topicOutJMS",
+      "type": "TOPIC",
+      "brokerType": "JMS"
+    }
+  ],
+  "links": [
+    {
+      "id": "b0a65f74-8941-4151-b216-9d081d45be91",
+      "fromId": "12345678-90ab-cdef-1234-567890abcdef",
+      "toId": "b2c3d4e5-f678-9012-3456-7890abcdef09",
+      "eventId": "c3d4e5f6-7890-1234-5678-90abcdef012a"
+    },
+    {
+      "id": "a47ba292-cfb2-458e-ae52-fcb8d31881d9",
+      "fromId": "12345678-90ab-cdef-1234-567890abcdef",
+      "toId": "b2c3d4e5-f678-9012-3456-7890abcdef10",
+      "eventId": "bdc6803e-5395-45f2-aece-c359de3d3f0b",
+      "tags": ["commonOutgoingTag","service1"]
+    },
+    {
+      "id": "8d05b239-2413-4881-ac48-08cc0ef77f0e",
+      "fromId": "12345678-90ab-cdef-1234-567890abcdef",
+      "toId": "b2c3d4e5-f678-9012-3456-7890abcdef11",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde1"
+    },
+    {
+      "id": "b26c7a95-8d5e-4822-ba94-89ec59b606a5",
+      "fromId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "toId": "b2c3d4e5-f678-9012-3456-7890abcdef09",
+      "eventId": "c3d4e5f6-7890-1234-5678-90abcdef012a",
+      "tags": ["commonOutgoingTag","service2"]
+    },
+    {
+      "id": "e81da35a-bdf1-4b56-b6c1-812e7cdda4b5",
+      "fromId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "toId": "b2c3d4e5-f678-9012-3456-7890abcdef10",
+      "eventId": "bdc6803e-5395-45f2-aece-c359de3d3f0b",
+      "tags": ["commonOutgoingTag","service2"]
+    },
+    {
+      "id": "c1d2ec17-6d94-4c71-b3af-c8a1dfa550a2",
+      "fromId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "toId": "b2c3d4e5-f678-9012-3456-7890abcdef11",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde1"
+    },
+    {
+      "id": "4644a4bc-5569-4e4f-a584-21b94a5578c5",
+      "toId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "fromId": "b2c3d4e5-f678-9012-3456-7890abcdef04",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde2",
+      "tags": ["topicConsumeKafka_2"],
+      "group": "group1"
+    },
+    {
+      "id": "5425064f-2ec1-4f27-941d-c6f7af798cca",
+      "toId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "fromId": "b2c3d4e5-f678-9012-3456-7890abcdef06",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde3"
+    },
+    {
+      "id": "ddf619ef-32b4-44b0-b210-c5c0c8105768",
+      "toId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "fromId": "b2c3d4e5-f678-9012-3456-7890abcdef08",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde4",
+      "tags": ["topicConsumeJMS_2"]
+    },
+    {
+      "id": "6be796d0-3c82-4075-a7ee-93af81bd1733",
+      "toId": "12345678-90ab-cdef-1234-567890abcdef",
+      "fromId": "b2c3d4e5-f678-9012-3456-7890abcdef03",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde2",
+      "tags": ["topicConsumeKafka_1"],
+      "group": "group1"
+    },
+    {
+      "id": "f3a036eb-3294-4549-bd79-d3c6170c4fd6",
+      "toId": "12345678-90ab-cdef-1234-567890abcdef",
+      "fromId": "b2c3d4e5-f678-9012-3456-7890abcdef05",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde3"
+    },
+    {
+      "id": "977898e8-c8c1-4418-932c-8083c1e63b25",
+      "toId": "12345678-90ab-cdef-1234-567890abcdef",
+      "fromId": "b2c3d4e5-f678-9012-3456-7890abcdef07",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde4",
+      "tags": ["topicConsumeJMS_1"]
+    },
+    {
+      "id": "243079a1-6a67-458f-8958-99748566d4f6",
+      "toId": "12345678-90ab-cdef-1234-567890abcdef",
+      "fromId": "996cb100-7ad2-4c22-9206-df13b2afa752",
+      "eventId": "14b0488c-7e8d-4283-9e50-66ba7a2e114d",
+      "tags": ["tagKafkaConsume1", "commonTag"],
+      "group": "group1"
+    },
+    {
+      "id": "c4ff3063-dd61-43a1-9450-e73d6aef70a6",
+      "toId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "fromId": "996cb100-7ad2-4c22-9206-df13b2afa752",
+      "eventId": "14b0488c-7e8d-4283-9e50-66ba7a2e114d",
+      "tags": ["tagKafkaConsume2", "commonTag"],
+      "group": "group1"
+    },
+    {
+      "id": "f3f7c3a2-626d-4ab4-833c-481642cd70b9",
+      "toId": "9cd5abde-6500-4811-ab74-e759d545a689",
+      "fromId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "eventId": "a1b2c3d4-1234-5678-1234-567890abcde1"
+    },
+    {
+      "id": "2449c890-ab00-4337-8069-b624cc1cd892",
+      "toId": "78b5576b-b548-4734-9d95-025a22965321",
+      "fromId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "eventId": "bdc6803e-5395-45f2-aece-c359de3d3f0b",
+      "tags": ["commonOutgoingTag","rabbitService2"]
+    }
+  ],
+  "events": [
+    {
+      "id": "14b0488c-7e8d-4283-9e50-66ba7a2e114d",
+      "name": "EventCommonConsumeKafka",
+      "tags": ["tagKafkaConsume1", "commonTag", "tagKafkaConsume2"],
+      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\"commonConsumeKafka\"]\n        }\n      }"
+    },
+    {
+      "id": "c3d4e5f6-7890-1234-5678-90abcdef012a",
+      "name": "EventOutgoingKafka",
+      "tags": ["commonOutgoingTag","service2"],
+      "schema": " {\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            {\n              \"name\": \"kafka/topicOutKafka\",\n              \"tags\": [\"commonOutgoingTag\",\"service2\"]\n            }\n          ]\n        }\n      }"
+    },
+    {
+      "id": "bdc6803e-5395-45f2-aece-c359de3d3f0b",
+      "name": "EventOutgoingRabbitMQ",
+      "tags": ["service1","service2", "rabbitService2", "commonOutgoingTag"],
+      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            {\n              \"name\": \"rabbitmq/topicOutRabbitMQ\",\n              \"tags\": [\"commonOutgoingTag\",\"service2\"]\n            },\n            {\n              \"name\": \"rabbitmq/rabbitService2\",\n              \"tags\": [\"commonOutgoingTag\",\"rabbitService2\"]\n            }\n          ]\n        }\n      }"
+    },
+    {
+      "id": "a1b2c3d4-1234-5678-1234-567890abcde1",
+      "name": "EventOutgoingJMS",
+      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            \"jms/topicOutJMS\", \"kafka/kafkaService2\"\n          ]\n        }\n      }"
+    },
+    {
+      "id": "a1b2c3d4-1234-5678-1234-567890abcde2",
+      "name": "EventConsumeKafka",
+      "tags": ["topicConsumeKafka_1", "topicConsumeKafka_2"],
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"kafka/topicConsumeKafka_2\"]}}"
+    },
+    {
+      "id": "a1b2c3d4-1234-5678-1234-567890abcde3",
+      "name": "EventConsumeRabbitMQ",
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"rabbitmq/topicConsumeRabbitMQ_2\"]}}"
+    },
+    {
+      "id": "a1b2c3d4-1234-5678-1234-567890abcde4",
+      "name": "EventConsumeJMS",
+      "tags": ["topicConsumeJMS_1","topicConsumeJMS_2"],
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"jms/topicConsumeJMS_2\"]}}"
+    }
+  ],
+  "errors": []
+}
