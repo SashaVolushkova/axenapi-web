@@ -1,0 +1,145 @@
+{
+  "name": "Some Service",
+  "nodes": [
+    {
+      "id": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "nodeDescription": null,
+      "nodeUrl": null,
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "Some Service",
+      "type": "SERVICE",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": null,
+      "tags": ["api", "events", "info"],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
+      "nodeDescription": null,
+      "nodeUrl": "/data/execute",
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "/data/execute",
+      "type": "HTTP",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": "POST",
+      "tags": ["api"],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "6bd7062e-0afa-4c84-a26d-f1b072fa2f51",
+      "nodeDescription": null,
+      "nodeUrl": "/data/search",
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "/data/search",
+      "type": "HTTP",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": "POST",
+      "tags": ["api"],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "7bd7062e-0afa-4c84-a26d-f1b072fa2f52",
+      "nodeDescription": null,
+      "nodeUrl": "/info",
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "/info",
+      "type": "HTTP",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": "GET",
+      "tags": ["info"],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "71e58b8e-fa0d-4aad-93a4-ee71b6b7a1ff",
+      "nodeDescription": null,
+      "nodeUrl": null,
+      "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
+      "name": "topic-xyz",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": null,
+      "tags": ["events"],
+      "documentationFileLinks": []
+    }
+  ],
+  "events": [
+    {
+      "id": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "schema": "{\r\n  \"required\" : [ \"ids\" ],\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"ids\" : {\r\n      \"type\" : \"array\",\r\n      \"items\" : {\r\n        \"type\" : \"string\"\r\n      }\r\n    }\r\n  }\r\n}",
+      "name": "ExecuteRequest",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null
+    },
+    {
+      "id": "518afd8e-85a6-4539-9316-e986f0e96fee",
+      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"query\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"limit\" : {\r\n      \"type\" : \"integer\"\r\n    }\r\n  }\r\n}",
+      "name": "SearchRequest",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null
+    },
+    {
+      "id": "618afd8e-85a6-4539-9316-e986f0e96fcc",
+      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"version\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"status\" : {\r\n      \"type\" : \"string\"\r\n    }\r\n  }\r\n}",
+      "name": "InfoResponse",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null
+    },
+    {
+      "id": "718afd8e-85a6-4539-9316-e986f0e96fbb",
+      "schema": "{\r\n  \"required\" : [ \"id\", \"type\" ],\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"id\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"type\" : {\r\n      \"type\" : \"string\"\r\n    }\r\n  },\r\n  \"x-incoming\" : {\r\n    \"topics\" : [ \"topic-xyz\" ]\r\n  }\r\n}",
+      "name": "MsgAbc",
+      "tags": ["events"],
+      "eventType": null,
+      "eventDescription": null
+    }
+  ],
+  "links": [
+    {
+      "id": "d839b3b0-d799-4f0c-875f-cfe9cefdf95f",
+      "fromId": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
+      "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "group": null,
+      "eventId": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "tags": []
+    },
+    {
+      "id": "e839b3b0-d799-4f0c-875f-cfe9cefdf95e",
+      "fromId": "6bd7062e-0afa-4c84-a26d-f1b072fa2f51",
+      "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "group": null,
+      "eventId": "518afd8e-85a6-4539-9316-e986f0e96fee",
+      "tags": []
+    },
+    {
+      "id": "f839b3b0-d799-4f0c-875f-cfe9cefdf95d",
+      "fromId": "7bd7062e-0afa-4c84-a26d-f1b072fa2f52",
+      "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "group": null,
+      "eventId": "618afd8e-85a6-4539-9316-e986f0e96fcc",
+      "tags": []
+    },
+    {
+      "id": "c59a2945-7e55-4383-9e84-5d1aeacf03c7",
+      "fromId": "71e58b8e-fa0d-4aad-93a4-ee71b6b7a1ff",
+      "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "group": "grp1",
+      "eventId": "718afd8e-85a6-4539-9316-e986f0e96fbb",
+      "tags": ["events"]
+    }
+  ],
+  "errors": [],
+  "tags": ["api", "events", "info"]
+}
