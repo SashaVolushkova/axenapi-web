@@ -1,0 +1,37 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "no_consumes_outgoing_with_broker_type_service_same_name",
+    "description": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
+    "version": "1.0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "EventOutgoingKafka": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "kafka/topic"
+          ]
+        }
+      },
+      "EventOutgoingRabbitMQ": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "rabbitmq/topic"
+          ]
+        }
+      },
+      "EventOutgoingJMS": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "jms/topic"
+          ]
+        }
+      }
+    }
+  }
+}
