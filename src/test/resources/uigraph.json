@@ -1,0 +1,70 @@
+{
+  "name": "a827b985-cb9a-4b04-b4be-59402215f1d&s1&s2",
+  "nodes": [
+    {
+      "id": "38f03412-45ee-49bd-aa99-72650f887f18",
+      "name": "s1",
+      "type": "SERVICE",
+      "brokerType": null,
+      "belongsToGraph": ["38f03412-45ee-49bd-aa99-72650f887f18"],
+      "tags": []
+    },
+    {
+      "id": "bd079209-1285-409f-b2ef-cb9a9867d135",
+      "name": "1t",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "belongsToGraph": ["38f03412-45ee-49bd-aa99-72650f887f18"],
+      "tags": []
+    },
+    {
+      "id": "bd9a9202-aae4-4667-aa48-39d847937366",
+      "name": "s2",
+      "type": "SERVICE",
+      "brokerType": null,
+      "belongsToGraph": ["bd9a9202-aae4-4667-aa48-39d847937366"],
+      "tags": []
+    },
+    {
+      "id": "ad0b0433-9b2c-4c6f-b23d-4719867d924b",
+      "name": "2t",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "belongsToGraph": ["bd9a9202-aae4-4667-aa48-39d847937366"],
+      "tags": []
+    }
+  ],
+  "events": [
+    {
+      "id": "1c7c0b76-12a5-474d-8c8c-e313507b83cc",
+      "name": "1",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"newProperty_1751446636396\" : {\n      \"type\" : \"string\"\n    }\n  },\n  \"description\" : \"No description provided\",\n  \"x-outgoing\" : {\n    \"topics\" : [ \"1t\" ]\n  }\n}",
+      "tags": []
+    },
+    {
+      "id": "ec9b3c74-3f0d-436a-b9ba-ff15f41d4839",
+      "name": "2",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"newProperty_1751447498763\" : {\n      \"type\" : \"string\"\n    }\n  },\n  \"description\" : \"No description provided\",\n  \"x-incoming\" : {\n    \"topics\" : [ \"2t\" ]\n  }\n}",
+      "tags": []
+    }
+  ],
+  "links": [
+    {
+      "id": "8f089fb3-442f-4daf-b6f3-2b060f074b17",
+      "fromId": "38f03412-45ee-49bd-aa99-72650f887f18",
+      "toId": "bd079209-1285-409f-b2ef-cb9a9867d135",
+      "eventId": "1c7c0b76-12a5-474d-8c8c-e313507b83cc",
+      "group": null,
+      "tags": []
+    },
+    {
+      "id": "7456c765-f1de-4e24-a5de-a0ddddc41038",
+      "fromId": "ad0b0433-9b2c-4c6f-b23d-4719867d924b",
+      "toId": "bd9a9202-aae4-4667-aa48-39d847937366",
+      "eventId": "ec9b3c74-3f0d-436a-b9ba-ff15f41d4839",
+      "group": "default",
+      "tags": []
+    }
+  ],
+  "tags": []
+}
