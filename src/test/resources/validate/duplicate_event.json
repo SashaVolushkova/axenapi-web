@@ -1,0 +1,46 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Example API",
+    "description": "An example API to demonstrate duplicate events in components",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/kafka/group1/commonConsumeKafka/EventCommonConsumeKafka": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed successfully"
+          }
+        },
+        "tags": ["tagKafkaConsume", "commonTag"]
+      }
+    },
+    "/kafka/group1/commonConsumeKafka/EventCommonConsumeKafka": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed successfully"
+          }
+        },
+        "tags": ["tagKafkaConsume", "commonTag"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EventCommonConsumeKafka": {
+        "type": "object",
+        "x-incoming": {
+          "topics": ["commonConsumeKafka"]
+        }
+      },
+      "EventCommonConsumeKafka": {
+        "type": "object",
+        "x-incoming": {
+          "topics": ["duplicateConsumeKafka"]
+        }
+      }
+    }
+  }
+}
