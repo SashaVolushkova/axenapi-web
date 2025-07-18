@@ -1,0 +1,72 @@
+{
+  "name": "consume_one_event_service",
+  "tags": [],
+  "nodes": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "consume_one_event_service",
+      "type": "SERVICE",
+      "brokerType": null
+    },
+    {
+      "id": "b2c3d4e5-f678-9012-3456-7890abcdef01",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "topic1",
+      "type": "TOPIC",
+      "brokerType": "KAFKA"
+    },
+    {
+      "id": "00f3b3ca-b815-408c-afdc-b7ebd9ae2202",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "/events/{eventId}",
+      "type": "HTTP",
+      "brokerType": null,
+      "methodType": "GET",
+      "nodeUrl": "/events/{eventId}",
+      "nodeDescription": "Description of the HTTP node"
+    },
+    {
+      "id": "0d3b2d62-ea2e-443f-9133-ab223454ff38",
+      "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
+      "name": "/events/{eventId}",
+      "type": "HTTP",
+      "brokerType": null,
+      "methodType": "PATCH",
+      "nodeUrl": "/events/{eventId}",
+      "nodeDescription": "Description of the HTTP node"
+    }
+  ],
+  "links": [
+    {
+      "toId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "fromId": "b2c3d4e5-f678-9012-3456-7890abcdef01",
+      "eventId": "c3d4e5f6-7890-1234-5678-90abcdef0123",
+      "group": "group1"
+    },
+    {
+      "toId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "fromId": "00f3b3ca-b815-408c-afdc-b7ebd9ae2202",
+      "eventId": "430c8a18-dc63-4e09-bb91-47d5cabcc562"
+
+    },
+    {
+      "toId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "fromId": "0d3b2d62-ea2e-443f-9133-ab223454ff31",
+      "eventId": "430c8a18-dc63-4e09-bb91-47d5cabcc562"
+    }
+  ],
+  "events": [
+    {
+      "id": "c3d4e5f6-7890-1234-5678-90abcdef0123",
+      "name": "Event1",
+      "schema": " {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": \"string\",\n            \"description\": \"Unique identifier for the event\"\n          },\n          \"data\": {\n            \"type\": \"object\",\n            \"description\": \"Payload of the event\"\n          }\n        },\n        \"x-incoming\": {\n          \"topics\": [\n            \"topic1\"\n          ]\n        }\n      }"
+    },
+    {
+      "id": "430c8a18-dc63-4e09-bb91-47d5cabcc562",
+      "name": "http_service_event",
+      "schema": "{\"type\": \"object\"}"
+    }
+  ],
+  "errors": []
+}
