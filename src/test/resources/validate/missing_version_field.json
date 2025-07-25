@@ -1,0 +1,13 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "empty_service",
+    "description" : "axenapi Specification for empty service"
+  },
+  "paths" : {
+
+  },
+  "components" : {
+
+  }
+}
