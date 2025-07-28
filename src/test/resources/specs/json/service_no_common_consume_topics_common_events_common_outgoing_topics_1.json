@@ -1,0 +1,89 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "service_no_common_consume_topics_common_events_common_outgoing_topics_1",
+    "description": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/kafka/group1/topicConsumeKafka_1/EventConsumeKafka": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed  successfully"
+          }
+        }
+      }
+    },
+    "/jms/topicConsumeJMS_1/EventConsumeJMS": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed  successfully"
+          }
+        }
+      }
+    },
+    "/rabbitmq/topicConsumeRabbitMQ_1/EventConsumeRabbitMQ": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed  successfully"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EventOutgoingKafka": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "kafka/topicOutKafka"
+          ]
+        }
+      },
+      "EventOutgoingRabbitMQ": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "rabbitmq/topicOutRabbitMQ"
+          ]
+        }
+      },
+      "EventOutgoingJMS": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "jms/topicOutJMS"
+          ]
+        }
+      },
+      "EventConsumeKafka": {
+        "type": "object",
+        "x-incoming": {
+          "topics": [
+            "topicConsumeKafka_1"
+          ]
+        }
+      },
+      "EventConsumeRabbitMQ": {
+        "type": "object",
+        "x-incoming": {
+          "topics": [
+            "topicConsumeRabbitMQ_1"
+          ]
+        }
+      },
+      "EventConsumeJMS": {
+        "type": "object",
+        "x-incoming": {
+          "topics": [
+            "topicConsumeJMS_1"
+          ]
+        }
+      }
+    }
+  }
+}

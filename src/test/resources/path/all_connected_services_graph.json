@@ -1,0 +1,105 @@
+{
+  "name": "all_connected_services_graph",
+  "nodes": [
+    {
+      "id": "6e7d89c2-0bc7-4b97-95c3-4fdc0841f93c",
+      "name": "Service1",
+      "type": "SERVICE",
+      "brokerType": null,
+      "tags": []
+    },
+    {
+      "id": "34a2120d-e36e-4c72-bf85-0de3c0d28da0",
+      "name": "Service2",
+      "type": "SERVICE",
+      "brokerType": null,
+      "tags": []
+    },
+    {
+      "id": "d5d508b0-75b0-41f1-81f4-51de3a71d348",
+      "name": "Service3",
+      "type": "SERVICE",
+      "brokerType": null,
+      "tags": []
+    },
+    {
+      "id": "6f417da5-8332-49b1-b51f-0c0d56c64a72",
+      "name": "Service4",
+      "type": "SERVICE",
+      "brokerType": null,
+      "tags": []
+    },
+    {
+      "id": "55a780db-b66c-4278-842b-c55b029394a7",
+      "name": "TopicA",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "tags": []
+    },
+    {
+      "id": "f8759f87-b0c9-4a36-8f93-10001e82f380",
+      "name": "TopicB",
+      "type": "TOPIC",
+      "brokerType": "JMS",
+      "tags": []
+    },
+    {
+      "id": "67e63149-e084-4b95-b401-2df404365af0",
+      "name": "TopicC",
+      "type": "TOPIC",
+      "brokerType": "RABBITMQ",
+      "tags": []
+    }
+  ],
+  "events": [
+    {
+      "id": "2b6200f9-750f-4f22-bf5f-dc56863b9723",
+      "name": "Event1",
+      "schema": "{\"type\": \"object\", \"x-incoming\": {\"topics\": [\"TopicA\"]}}",
+      "tags": []
+    },
+    {
+      "id": "44a6ad1c-9603-41b7-b1b9-3e4ffda33da9",
+      "name": "Event2",
+      "schema": "{\"type\": \"object\", \"x-incoming\": {\"topics\": [\"TopicB\"]}}",
+      "tags": []
+    },
+    {
+      "id": "9de8b698-39f0-4b1d-9bc5-1109eb225b01",
+      "name": "Event3",
+      "schema": "{\"type\": \"object\", \"x-incoming\": {\"topics\": [\"TopicC\"]}}",
+      "tags": []
+    },
+    {
+      "id": "ed825a22-66a1-4b1b-9db7-158b5ae9b56e",
+      "name": "Event4",
+      "schema": "{\"type\": \"object\", \"x-outgoing\": {\"topics\": [\"TopicA\"]}}",
+      "tags": []
+    },
+    {
+      "id": "4f67f699-b750-4e12-9391-bbed6a22cfd0",
+      "name": "Event5",
+      "schema": "{\"type\": \"object\", \"x-outgoing\": {\"topics\": [\"TopicB\"]}}",
+      "tags": []
+    },
+    {
+      "id": "f81de909-f8e2-409f-b6f7-e9377d88e8d4",
+      "name": "Event6",
+      "schema": "{\"type\": \"object\", \"x-outgoing\": {\"topics\": [\"TopicC\"]}}",
+      "tags": []
+    }
+  ],
+  "links": [
+    { "fromId": "55a780db-b66c-4278-842b-c55b029394a7", "toId": "6e7d89c2-0bc7-4b97-95c3-4fdc0841f93c", "eventId": "2b6200f9-750f-4f22-bf5f-dc56863b9723", "tags": [] },
+    { "fromId": "f8759f87-b0c9-4a36-8f93-10001e82f380", "toId": "34a2120d-e36e-4c72-bf85-0de3c0d28da0", "eventId": "44a6ad1c-9603-41b7-b1b9-3e4ffda33da9", "tags": [] },
+    { "fromId": "67e63149-e084-4b95-b401-2df404365af0", "toId": "d5d508b0-75b0-41f1-81f4-51de3a71d348", "eventId": "9de8b698-39f0-4b1d-9bc5-1109eb225b01", "tags": [] },
+
+    { "fromId": "6e7d89c2-0bc7-4b97-95c3-4fdc0841f93c", "toId": "f8759f87-b0c9-4a36-8f93-10001e82f380", "eventId": "4f67f699-b750-4e12-9391-bbed6a22cfd0", "tags": [] },
+    { "fromId": "34a2120d-e36e-4c72-bf85-0de3c0d28da0", "toId": "67e63149-e084-4b95-b401-2df404365af0", "eventId": "f81de909-f8e2-409f-b6f7-e9377d88e8d4", "tags": [] },
+    { "fromId": "d5d508b0-75b0-41f1-81f4-51de3a71d348", "toId": "55a780db-b66c-4278-842b-c55b029394a7", "eventId": "ed825a22-66a1-4b1b-9db7-158b5ae9b56e", "tags": [] },
+
+    { "fromId": "55a780db-b66c-4278-842b-c55b029394a7", "toId": "6f417da5-8332-49b1-b51f-0c0d56c64a72", "eventId": "2b6200f9-750f-4f22-bf5f-dc56863b9723", "tags": [] },
+    { "fromId": "6f417da5-8332-49b1-b51f-0c0d56c64a72", "toId": "67e63149-e084-4b95-b401-2df404365af0", "eventId": "f81de909-f8e2-409f-b6f7-e9377d88e8d4", "tags": [] }
+  ],
+  "errors": []
+}

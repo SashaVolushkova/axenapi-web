@@ -1,0 +1,16 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "",
+    "description" : "API specification for ",
+    "version" : "1.0.0"
+  },
+  "paths" : { },
+  "components" : {
+    "schemas" : {
+      "EventSchema" : {
+        "type" : "string"
+      }
+    }
+  }
+}

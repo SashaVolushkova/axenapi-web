@@ -1,0 +1,21 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "no_consumes_one_outgoing_no_broker_type_service",
+    "description": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
+    "version": "1.0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "EventOutgoing": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "topic"
+          ]
+        }
+      }
+    }
+  }
+}

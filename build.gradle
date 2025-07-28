@@ -1,0 +1,205 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id 'org.springframework.boot' version '3.4.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id "org.openapi.generator" version "7.12.0"
+    id 'java'
+    id 'info.solidsoft.pitest' version '1.15.0'
+}
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+apply plugin: 'maven-publish'
+
+group = 'pro.axenix-innovation.axenapi.web'
+version = '1.0-SNAPSHOT'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+//    mavenCentral()
+    maven {
+        name "git verse"
+        url "https://mvn-mirror.gitverse.ru"
+    }
+
+}
+
+dependencies {
+    implementation 'org.yaml:snakeyaml:2.0'
+
+    implementation 'com.github.mifmif:generex:1.0.2'
+
+
+    implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+    implementation 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.1.22'
+
+
+    implementation 'org.docx4j:docx4j-core:11.4.6'
+    implementation 'org.docx4j:docx4j-ImportXHTML:11.4.6'
+    // https://mvnrepository.com/artifact/org.openapitools/openapi-generator
+    implementation("org.openapitools:openapi-generator:7.14.0") {
+        exclude(group: 'javax.validation')
+        exclude(group: 'com.github.java-json-tools')
+        exclude(group: 'io.swagger')
+        exclude(group: 'com.fasterxml.jackson.core')
+        exclude(group: 'io.swagger.core.v3')
+    }
+
+    implementation 'org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.6'
+
+    implementation 'org.liquibase:liquibase-core:4.27.0'
+
+    implementation 'net.datafaker:datafaker:2.0.2'
+    implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema:2.15.0'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    runtimeOnly 'com.h2database:h2'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+
+    // Spring boot websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation("org.mockito:mockito-core:5.15.2")
+    testImplementation("org.mockito:mockito-inline:5.2.0") // or newer
+
+    // https://mvnrepository.com/artifact/io.swagger.parser.v3/swagger-parser
+    implementation("io.swagger.parser.v3:swagger-parser:2.1.25") {
+        exclude(group: 'javax.validation')
+        exclude(group: 'com.github.java-json-tools')
+        exclude(group: 'io.swagger')
+        exclude(group: 'com.fasterxml.jackson.core')
+        exclude(group: 'io.swagger.core.v3')
+    }
+
+    // Mockito for unit tests
+    testImplementation 'org.mockito:mockito-core:4.5.0'  // Mockito core library for unit testing
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.5.0'  // Mockito integration with JUnit 5
+
+    // Spring Boot test dependency for testing purposes
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Integration with gitLab
+    implementation 'org.gitlab4j:gitlab4j-api:6.0.0'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r'
+}
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "${project.projectDir}/src/main/resources/axenapi-be.yml".replace("\\","/")
+    outputDir = "${buildDir}/generated"
+    apiPackage = "pro.axenix_innovation.axenapi.web.api"
+    modelPackage = "pro.axenix_innovation.axenapi.web.model"
+    configOptions = [
+            useSpringBoot3: "true",
+            interfaceOnly: "true",
+            useTags: "true",
+            generateBuilders: "true",
+            generatedConstructorWithRequiredArgs: "true",
+            generateConstructorWithAllArgs: "true"
+    ]
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java", "build/generated/src/main/java"]
+        }
+    }
+}
+
+tasks.named("compileJava").configure {
+    dependsOn tasks.named("openApiGenerate")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += "--enable-preview"
+}
+
+// Configure test task to use JUnit Platform (JUnit 5)
+test {
+    jvmArgs '--enable-preview'
+    useJUnitPlatform()
+}
+
+tasks.register('assembleArtifact', Zip) {
+    setArchiveFileName('axenapi-api.zip')
+    destinationDirectory = file("$buildDir/libs/")
+    from "src/main/resources/axenapi-be.yml"
+    description = "Assemble archive axenapi-api.zip into ${relativePath(destinationDirectory)}"
+}
+openApiValidate {
+    inputSpec = "${project.projectDir}/src/main/resources/axenapi-be.yml".toString()
+    recommend = true
+}
+
+project.tasks.assembleArtifact.dependsOn('openApiValidate')
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact bootJar
+            artifact source: assembleArtifact, extension: 'zip'
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username System.getenv("NEXUS_USERNAME") ?: "default_username"
+                password System.getenv("NEXUS_PASSWORD") ?: "default_password"
+            }
+            url "https://nexus-common.ru-central1.internal:8443/repository/maven-snapshots/"
+            allowInsecureProtocol = true
+        }
+    }
+}
+
+pitest {
+    junit5PluginVersion = '1.2.2'
+    pitestVersion = '1.18.2'
+    targetClasses = ['pro.axenix_innovation.axenapi.*']
+    targetTests = ['pro.axenix_innovation.axenapi.*']
+    timestampedReports = false
+    threads = 8
+    outputFormats = ['XML', 'HTML']
+    useClasspathFile = true
+    excludedClasses = ['pro.axenix_innovation.axenapi.web.model.*', 'pro.axenix_innovation.axenapi.web.service.EventGraphService#logGraphState']
+    avoidCallsTo = ['pro.axenix_innovation.axenapi.web.service.EventGraphService#logGraphState'
+                    , 'org.slf4j.Logger#error'
+                    , 'org.slf4j.Logger#info'
+                    , 'org.slf4j.Logger#warn'
+                    , 'org.slf4j.Logger#debug'
+                    , 'org.slf4j.Logger#trace'
+    ]
+}
+
+// Add a task to conditionally set SSL trust store properties only during publish
+tasks.withType(PublishToMavenRepository).configureEach {
+    doFirst {
+        // Only set these properties during the publish task execution
+        System.setProperty('javax.net.ssl.trustStore', './crt/nexus.jks')
+        System.setProperty('javax.net.ssl.trustStorePassword', System.getenv("SSL_KEY") ?: "default_password")
+        logger.lifecycle("SSL trust store properties set for Nexus publishing")
+    }
+    doLast {
+        // Clean up the properties after publishing is complete
+        System.clearProperty('javax.net.ssl.trustStore')
+        System.clearProperty('javax.net.ssl.trustStorePassword')
+        logger.lifecycle("SSL trust store properties cleared")
+    }
+}

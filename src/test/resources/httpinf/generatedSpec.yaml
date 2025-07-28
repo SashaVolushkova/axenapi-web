@@ -1,0 +1,120 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "consume_one_event_service",
+    "description" : "axenapi Specification for consume_one_event_service",
+    "version" : "1.0.0"
+  },
+  "paths" : {
+    "/kafka/group1/topic1/Event1" : {
+      "description" : "Operation for Event1",
+      "post" : {
+        "summary" : "Post event Event1",
+        "description" : "Post event data from topic topic1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "id" : {
+                    "type" : "string",
+                    "description" : "Unique identifier for the event"
+                  },
+                  "data" : {
+                    "type" : "object",
+                    "description" : "Payload of the event"
+                  }
+                },
+                "x-incoming" : {
+                  "topics" : [ "topic1" ],
+                  "tags" : [ ]
+                }
+              }
+            }
+          },
+          "required" : true
+        }
+      }
+    },
+    "/events/{eventId}" : {
+      "get" : {
+        "summary" : "Retrieve a specific event by ID",
+        "description" : "Fetch a single event by its ID",
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "ID of the event to retrieve",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Event1"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Event not found"
+          }
+        }
+      },
+      "patch" : {
+        "summary" : "Update a specific event by ID",
+        "description" : "Update an event identified by ID",
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "ID of the event to retrieve",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Event1"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Event not found"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Event1" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "Unique identifier for the event"
+          },
+          "data" : {
+            "type" : "object",
+            "description" : "Payload of the event"
+          }
+        },
+        "x-incoming" : {
+          "topics" : [ "topic1" ],
+          "tags" : [ ]
+        }
+      }
+    }
+  }
+}

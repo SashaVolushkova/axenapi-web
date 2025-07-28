@@ -1,0 +1,183 @@
+{
+  "name" : "consume_three_events_from_different_brokers_service&service_no_common_consume_topics_common_events_common_outgoing_topics_1",
+  "nodes" : [ {
+    "id" : "d4e5f678-9012-3456-7890-abcdef012345",
+    "belongsToGraph" : [ "a1b2c3d4-e5f6-7890-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef" ],
+    "name" : "topicJMS",
+    "type" : "TOPIC",
+    "brokerType" : "JMS",
+    "tags" : [ ]
+  }, {
+    "id" : "f4551b60-560a-4797-9345-afd1cddd35a0",
+    "belongsToGraph" : [ "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98", "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98" ],
+    "name" : "topicConsumeRabbitMQ_1",
+    "type" : "TOPIC",
+    "brokerType" : "RABBITMQ",
+    "tags" : [ ]
+  }, {
+    "id" : "e1465903-f378-49ea-bc4b-2d525da5e898",
+    "belongsToGraph" : [ "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98", "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98" ],
+    "name" : "topicConsumeJMS_1",
+    "type" : "TOPIC",
+    "brokerType" : "JMS",
+    "tags" : [ ]
+  }, {
+    "id" : "b2c3d4e5-f678-9012-3456-7890abcdef01",
+    "belongsToGraph" : [ "a1b2c3d4-e5f6-7890-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef" ],
+    "name" : "topicKafka",
+    "type" : "TOPIC",
+    "brokerType" : "KAFKA",
+    "tags" : [ ]
+  }, {
+    "id" : "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "belongsToGraph" : [ "a1b2c3d4-e5f6-7890-1234-567890abcdef" ],
+    "name" : "consume_three_events_from_different_brokers_service",
+    "type" : "SERVICE",
+    "brokerType" : null,
+    "tags" : [ ]
+  }, {
+    "id" : "c3d4e5f6-7890-1234-5678-90abcdef0123",
+    "belongsToGraph" : [ "a1b2c3d4-e5f6-7890-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef" ],
+    "name" : "topicRabbitMQ",
+    "type" : "TOPIC",
+    "brokerType" : "RABBITMQ",
+    "tags" : [ ]
+  }, {
+    "id" : "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98",
+    "belongsToGraph" : [ "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98" ],
+    "name" : "service_no_common_consume_topics_common_events_common_outgoing_topics_1",
+    "type" : "SERVICE",
+    "brokerType" : null,
+    "tags" : [ ]
+  }, {
+    "id" : "d9e48ec5-c235-45eb-b84d-2abcb14eacdc",
+    "belongsToGraph" : [ "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98", "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98" ],
+    "name" : "topicConsumeKafka_1",
+    "type" : "TOPIC",
+    "brokerType" : "KAFKA",
+    "tags" : [ ]
+  }, {
+    "id" : "5e4bf0c8-c5c1-4a49-b18d-335e84cb9d6f",
+    "belongsToGraph" : [ "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98", "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98" ],
+    "name" : "topicOutRabbitMQ",
+    "type" : "TOPIC",
+    "brokerType" : "RABBITMQ",
+    "tags" : [ ]
+  }, {
+    "id" : "56952c5b-e91e-47d9-80dc-8622d94ef424",
+    "belongsToGraph" : [ "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98", "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98" ],
+    "name" : "topicOutKafka",
+    "type" : "TOPIC",
+    "brokerType" : "KAFKA",
+    "tags" : [ ]
+  }, {
+    "id" : "fa113969-79f1-47a9-b749-640b30e91a65",
+    "belongsToGraph" : [ "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98", "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98" ],
+    "name" : "topicOutJMS",
+    "type" : "TOPIC",
+    "brokerType" : "JMS",
+    "tags" : [ ]
+  } ],
+  "events" : [ {
+    "id" : "31e97e28-d4b0-41c8-a54e-6b7c7db6df8f",
+    "schema" : "{\r\n  \"type\" : \"object\",\r\n  \"x-outgoing\" : {\r\n    \"topics\" : [ \"rabbitmq/topicOutRabbitMQ\" ]\r\n  }\r\n}",
+    "name" : "EventOutgoingRabbitMQ",
+    "tags" : [ ]
+  }, {
+    "id" : "701d1ae5-8c5f-40a2-a71c-48b633b286a8",
+    "schema" : "{\r\n  \"type\" : \"object\",\r\n  \"x-incoming\" : {\r\n    \"topics\" : [ \"topicConsumeJMS_1\" ]\r\n  }\r\n}",
+    "name" : "EventConsumeJMS",
+    "tags" : [ ]
+  }, {
+    "id" : "7be7333c-c16c-4062-b66b-69aefccbc1dd",
+    "schema" : "{\r\n  \"type\" : \"object\",\r\n  \"x-incoming\" : {\r\n    \"topics\" : [ \"topicConsumeKafka_1\" ]\r\n  }\r\n}",
+    "name" : "EventConsumeKafka",
+    "tags" : [ ]
+  }, {
+    "id" : "78901234-5678-90ab-cdef-0123456789ab",
+    "schema" : "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicJMS\"\n            ]\n        }\n      }",
+    "name" : "EventJMS",
+    "tags" : [ ]
+  }, {
+    "id" : "90571ce2-f2ee-4ac9-8a19-3347152c4869",
+    "schema" : "{\r\n  \"type\" : \"object\",\r\n  \"x-outgoing\" : {\r\n    \"topics\" : [ \"jms/topicOutJMS\" ]\r\n  }\r\n}",
+    "name" : "EventOutgoingJMS",
+    "tags" : [ ]
+  }, {
+    "id" : "e5f67890-1234-5678-90ab-cdef01234567",
+    "schema" : "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicKafka\"\n          ]\n        }\n      }",
+    "name" : "EventKafka",
+    "tags" : [ ]
+  }, {
+    "id" : "f6789012-3456-7890-abcd-ef0123456789",
+    "schema" : "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicRabbitMQ\"\n            ]\n        }\n      }",
+    "name" : "EventRabbitMQ",
+    "tags" : [ ]
+  }, {
+    "id" : "4d3ed067-b150-46d1-a0a5-9c5633911557",
+    "schema" : "{\r\n  \"type\" : \"object\",\r\n  \"x-incoming\" : {\r\n    \"topics\" : [ \"topicConsumeRabbitMQ_1\" ]\r\n  }\r\n}",
+    "name" : "EventConsumeRabbitMQ",
+    "tags" : [ ]
+  }, {
+    "id" : "2bb67617-a862-481b-874b-930108343bf8",
+    "schema" : "{\r\n  \"type\" : \"object\",\r\n  \"x-outgoing\" : {\r\n    \"topics\" : [ \"kafka/topicOutKafka\" ]\r\n  }\r\n}",
+    "name" : "EventOutgoingKafka",
+    "tags" : [ ]
+  } ],
+  "links" : [ {
+    "fromId" : "c3d4e5f6-7890-1234-5678-90abcdef0123",
+    "toId" : "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "group" : null,
+    "eventId" : "f6789012-3456-7890-abcd-ef0123456789",
+    "tags" : [ ]
+  }, {
+    "fromId" : "e1465903-f378-49ea-bc4b-2d525da5e898",
+    "toId" : "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98",
+    "group" : null,
+    "eventId" : "701d1ae5-8c5f-40a2-a71c-48b633b286a8",
+    "tags" : [ ]
+  }, {
+    "fromId" : "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98",
+    "toId" : "56952c5b-e91e-47d9-80dc-8622d94ef424",
+    "group" : null,
+    "eventId" : "2bb67617-a862-481b-874b-930108343bf8",
+    "tags" : [ ]
+  }, {
+    "fromId" : "d4e5f678-9012-3456-7890-abcdef012345",
+    "toId" : "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "group" : null,
+    "eventId" : "78901234-5678-90ab-cdef-0123456789ab",
+    "tags" : [ ]
+  }, {
+    "fromId" : "f4551b60-560a-4797-9345-afd1cddd35a0",
+    "toId" : "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98",
+    "group" : null,
+    "eventId" : "4d3ed067-b150-46d1-a0a5-9c5633911557",
+    "tags" : [ ]
+  }, {
+    "fromId" : "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98",
+    "toId" : "fa113969-79f1-47a9-b749-640b30e91a65",
+    "group" : null,
+    "eventId" : "90571ce2-f2ee-4ac9-8a19-3347152c4869",
+    "tags" : [ ]
+  }, {
+    "fromId" : "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98",
+    "toId" : "5e4bf0c8-c5c1-4a49-b18d-335e84cb9d6f",
+    "group" : null,
+    "eventId" : "31e97e28-d4b0-41c8-a54e-6b7c7db6df8f",
+    "tags" : [ ]
+  }, {
+    "fromId" : "b2c3d4e5-f678-9012-3456-7890abcdef01",
+    "toId" : "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "group" : "group1",
+    "eventId" : "e5f67890-1234-5678-90ab-cdef01234567",
+    "tags" : [ ]
+  }, {
+    "fromId" : "d9e48ec5-c235-45eb-b84d-2abcb14eacdc",
+    "toId" : "1d8e7ab2-8712-46d0-8f8a-e7574b21fa98",
+    "group" : "group1",
+    "eventId" : "7be7333c-c16c-4062-b66b-69aefccbc1dd",
+    "tags" : [ ]
+  } ],
+  "errors" : [ ]
+}
