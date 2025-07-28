@@ -1,0 +1,51 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Notification-Service",
+    "description" : "AxenAPI Specification for Notification-Service",
+    "version" : "1.0.0"
+  },
+  "paths" : {
+    "/kafka/default/Cart-Topic/CartItemAdded" : {
+      "post" : {
+        "responses" : {
+          "200" : {
+            "description" : "Event sent successfully"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CartItemAdded" : {
+        "type" : "object",
+        "properties" : {
+          "productId" : {
+            "type" : "string"
+          },
+          "quantity" : {
+            "type" : "integer"
+          }
+        },
+        "x-incoming" : {
+          "topics" : [ "Cart-Topic" ]
+        }
+      },
+      "NotificationSent" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "x-outgoing" : {
+          "topics" : [ "KAFKA/Notification-Topic" ]
+        }
+      }
+    }
+  }
+}

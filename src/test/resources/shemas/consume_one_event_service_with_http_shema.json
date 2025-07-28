@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "belongsToGraph": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "brokerType": { "type": ["string", "null"] },
+          "methodType": { "type": ["string", "null"] },
+          "nodeUrl": { "type": "string" },
+          "nodeDescription": { "type": "string" }
+        },
+        "required": ["id", "belongsToGraph", "name", "type"]
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "toId": { "type": "string" },
+          "fromId": { "type": "string" },
+          "eventId": { "type": "string" },
+          "group": { "type": "string" }
+        },
+        "required": ["toId", "fromId", "eventId"]
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "schema": { "type": "string" }
+        },
+        "required": ["id", "name", "schema"]
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": { "type": "object" }
+    }
+  },
+  "required": ["name", "tags", "nodes", "links", "events", "errors"]
+}

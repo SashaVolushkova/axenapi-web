@@ -1,0 +1,37 @@
+{{#models}}
+{{#model}}
+# {{{classname}}}
+
+# MODEL
+
+## Properties
+
+{{#vendorExtensions.x-incoming}}
+ Incoming topics:
+    {{#topics}}
+              {{.}}
+    {{/topics}}
+{{/vendorExtensions.x-incoming}}
+
+{{#vendorExtensions.x-outgoing}}
+ Outgoing topics:
+    {{#topics}}
+              {{.}}
+    {{/topics}}
+{{/vendorExtensions.x-outgoing}}
+
+
+| Name | Type | Description | Notes |
+|------------ | ------------- | ------------- | -------------|
+{{#parent}}
+{{#parentVars}}
+| **{{name}}** | {{#isPrimitiveType}}**{{dataType}}**{{/isPrimitiveType}}{{^isPrimitiveType}}[**{{dataType}}**]({{complexType}}.md){{/isPrimitiveType}} | {{description}} | {{^required}}[optional] {{/required}}{{#readOnly}}[readonly] {{/readOnly}}{{#defaultValue}}[default to {{{.}}}]{{/defaultValue}} |
+{{/parentVars}}
+{{/parent}}
+{{#vars}}| **{{name}}** | {{#isPrimitiveType}}**{{dataType}}**{{/isPrimitiveType}}{{^isPrimitiveType}}[**{{dataType}}**]({{complexType}}.md){{/isPrimitiveType}} | {{description}} | {{^required}}[optional] {{/required}}{{#readOnly}}[readonly] {{/readOnly}}{{#defaultValue}}[default to {{{.}}}]{{/defaultValue}} |
+{{/vars}}
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+    {{/model}}
+{{/models}}

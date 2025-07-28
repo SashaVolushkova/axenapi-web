@@ -1,0 +1,158 @@
+{
+  "name": "371529b4-7c88-4d2c-9504-d65ba97e6659&Notification-Service&Cart-Service",
+  "nodes": [
+    {
+      "id": "e6ded6bc-5093-4d73-b652-ad920a3ab303",
+      "nodeDescription": null,
+      "nodeUrl": null,
+      "belongsToGraph": [
+        "e6ded6bc-5093-4d73-b652-ad920a3ab303"
+      ],
+      "name": "Notification-Service",
+      "type": "SERVICE",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": null,
+      "tags": [],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "fef63cf6-bd0a-41c9-b6fc-2e4a9ee463cc",
+      "nodeDescription": null,
+      "nodeUrl": null,
+      "belongsToGraph": [
+        "e6ded6bc-5093-4d73-b652-ad920a3ab303",
+        "d79e2626-45de-4eab-924e-ba91c89fedd2"
+      ],
+      "name": "Cart-Topic",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": null,
+      "tags": [],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "0042b810-060d-47b0-a81e-12c831c982ba",
+      "nodeDescription": null,
+      "nodeUrl": null,
+      "belongsToGraph": [
+        "e6ded6bc-5093-4d73-b652-ad920a3ab303"
+      ],
+      "name": "Notification-Topic",
+      "type": "TOPIC",
+      "brokerType": "KAFKA",
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": null,
+      "tags": [],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "d79e2626-45de-4eab-924e-ba91c89fedd2",
+      "nodeDescription": null,
+      "nodeUrl": null,
+      "belongsToGraph": [
+        "d79e2626-45de-4eab-924e-ba91c89fedd2"
+      ],
+      "name": "Cart-Service",
+      "type": "SERVICE",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": null,
+      "tags": [
+        "HTTP"
+      ],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "93144439-c49b-456b-933d-10bb444ec5ca",
+      "nodeDescription": null,
+      "nodeUrl": "/api/cart",
+      "belongsToGraph": [
+        "d79e2626-45de-4eab-924e-ba91c89fedd2"
+      ],
+      "name": "/api/cart",
+      "type": "HTTP",
+      "brokerType": null,
+      "requestBody": null,
+      "responseBody": null,
+      "methodType": "GET",
+      "tags": [
+        "HTTP"
+      ],
+      "documentationFileLinks": []
+    }
+  ],
+  "events": [
+    {
+      "id": "e1484314-1624-4272-971c-12fd2cd28d69",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"productId\" : {\n      \"type\" : \"string\"\n    },\n    \"quantity\" : {\n      \"type\" : \"integer\"\n    }\n  },\n  \"x-incoming\" : {\n    \"topics\" : [ \"Cart-Topic\" ]\n  }\n}",
+      "name": "CartItemAdded",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null
+    },
+    {
+      "id": "dbc7e313-bdf4-45b0-8ec2-dc7320d1cf3a",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"userId\" : {\n      \"type\" : \"string\"\n    },\n    \"message\" : {\n      \"type\" : \"string\"\n    }\n  },\n  \"x-outgoing\" : {\n    \"topics\" : [ \"KAFKA/Notification-Topic\" ]\n  }\n}",
+      "name": "NotificationSent",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null
+    },
+    {
+      "id": "8c1baeae-41f9-4af6-8e3a-47dcfd8590c1",
+      "schema": "{\"type\":\"object\",\"properties\":{\"userId\":{\"type\":\"string\"}},\"x-http-name\":\"/api/cart\"}",
+      "name": "CartRequested",
+      "tags": [
+        "HTTP"
+      ],
+      "eventType": null,
+      "eventDescription": null
+    }
+  ],
+  "links": [
+    {
+      "id": "a392599c-0a3d-4865-8f0a-93c89592d2b1",
+      "fromId": "fef63cf6-bd0a-41c9-b6fc-2e4a9ee463cc",
+      "toId": "e6ded6bc-5093-4d73-b652-ad920a3ab303",
+      "group": "default",
+      "eventId": "e1484314-1624-4272-971c-12fd2cd28d69",
+      "tags": []
+    },
+    {
+      "id": "816bcfb7-2137-405c-85b7-1950e19fccd6",
+      "fromId": "e6ded6bc-5093-4d73-b652-ad920a3ab303",
+      "toId": "0042b810-060d-47b0-a81e-12c831c982ba",
+      "group": null,
+      "eventId": "dbc7e313-bdf4-45b0-8ec2-dc7320d1cf3a",
+      "tags": []
+    },
+    {
+      "id": "d19b9b99-f644-47ce-836d-8b4e73cd8b9f",
+      "fromId": "93144439-c49b-456b-933d-10bb444ec5ca",
+      "toId": "d79e2626-45de-4eab-924e-ba91c89fedd2",
+      "group": null,
+      "eventId": "8c1baeae-41f9-4af6-8e3a-47dcfd8590c1",
+      "tags": [
+        "HTTP"
+      ]
+    },
+    {
+      "id": "8dca855f-3ee2-4af8-9e7a-dc5dac7e9f1c",
+      "fromId": "d79e2626-45de-4eab-924e-ba91c89fedd2",
+      "toId": "fef63cf6-bd0a-41c9-b6fc-2e4a9ee463cc",
+      "group": null,
+      "eventId": "e1484314-1624-4272-971c-12fd2cd28d69",
+      "tags": []
+    }
+  ],
+  "errors": [],
+  "tags": [
+    "HTTP"
+  ]
+}

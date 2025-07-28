@@ -1,0 +1,117 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "service_no_common_consume_topics_common_events_common_outgoing_topics_2",
+    "description": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/kafka/group1/commonConsumeKafka/EventCommonConsumeKafka": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed  successfully"
+          }
+        },
+        "tags": ["tagKafkaConsume2", "commonTag"]
+      }
+    },
+    "/kafka/group1/topicConsumeKafka_2/EventConsumeKafka": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed  successfully"
+          }
+        },
+        "tags": ["topicConsumeKafka_2"]
+      }
+    },
+    "/jms/topicConsumeJMS_2/EventConsumeJMS": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed  successfully"
+          }
+        },
+        "tags": ["topicConsumeJMS_2"]
+      }
+    },
+    "/rabbitmq/topicConsumeRabbitMQ_2/EventConsumeRabbitMQ": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Event consumed  successfully"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EventCommonConsumeKafka" : {
+        "type": "object",
+        "x-incoming": {
+          "topics": ["commonConsumeKafka"]
+        }
+      },
+      "EventOutgoingKafka": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            {
+              "name": "kafka/topicOutKafka",
+              "tags": ["commonOutgoingTag","service2"]
+            }
+          ]
+        }
+      },
+      "EventOutgoingRabbitMQ": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            {
+              "name": "rabbitmq/topicOutRabbitMQ",
+              "tags": ["commonOutgoingTag","service2"]
+            },
+            {
+              "name": "rabbitmq/rabbitService2",
+              "tags": ["commonOutgoingTag","rabbitService2"]
+            }
+          ]
+        }
+      },
+      "EventOutgoingJMS": {
+        "type": "object",
+        "x-outgoing": {
+          "topics": [
+            "jms/topicOutJMS", "kafka/kafkaService2"
+          ]
+        }
+      },
+      "EventConsumeKafka": {
+        "type": "object",
+        "x-incoming": {
+          "topics": [
+            "kafka/topicConsumeKafka_2"
+          ]
+        }
+      },
+      "EventConsumeRabbitMQ": {
+        "type": "object",
+        "x-incoming": {
+          "topics": [
+            "rabbitmq/topicConsumeRabbitMQ_2"
+          ]
+        }
+      },
+      "EventConsumeJMS": {
+        "type": "object",
+        "x-incoming": {
+          "topics": [
+            "jms/topicConsumeJMS_2"
+          ]
+        }
+      }
+    }
+  }
+}
