@@ -1,0 +1,144 @@
+image: nexus-common.ru-central1.internal:5000/base/gradle:8.10-jdk22
+
+stages:
+  - build
+  - build-docker
+  # - code-quality
+  - test
+  - deploy
+  - publish
+
+cache:
+  key: ${CI_PIPELINE_ID}
+  paths:
+    - reports
+    - libs
+
+build:
+  stage: build
+  script:
+    - gradle build -x check -x test
+  artifacts:
+    when: always
+    expire_in: 4 days
+    paths:
+      - build/libs/*.jar
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - job_execution_timeout
+      - unknown_failure
+  tags:
+    - k8s
+    - edu
+
+build-docker:
+  stage: build-docker
+  image:
+    name: nexus-common.ru-central1.internal:5000/base/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  variables:
+    IMAGE: "$NEXUS_DOCKER/$CI_PROJECT_NAME:latest"
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$NEXUS_DOCKER\":{\"username\":\"$NEXUS_USER\",\"password\":\"$NEXUS_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --insecure --skip-tls-verify --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $IMAGE
+  rules:
+    - if: "$CI_COMMIT_REF_NAME =~ /^develop.*/"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - job_execution_timeout
+      - unknown_failure
+  tags:
+    - k8s
+    - edu
+
+#code-quality:
+#  stage: code-quality
+#  script:
+#    - gradle ktlintCheck -x test
+#  artifacts:
+#    when: always
+#    expire_in: 3 days
+#    reports:
+#      codequality: ./build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.json
+#  tags:
+#    - k8s
+#    - edu
+
+test:
+  stage: test
+  script:
+    - gradle test -x check
+  artifacts:
+    when: always
+    expire_in: 4 days
+    paths:
+      - build/reports/tests/test/index.html
+    reports:
+      junit: build/test-results/test/**/TEST-*.xml
+  except:
+    - main
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - job_execution_timeout
+      - unknown_failure
+  tags:
+    - k8s
+    - edu
+
+deploy:
+  image: nexus-common.ru-central1.internal:5000/deploy:latest
+  stage: deploy
+  before_script:
+    - mkdir -p /root/.kube
+    - cp ${KUBE_CONFIG} /root/.kube/config
+    - chmod 600 /root/.kube/config
+    - export KUBECONFIG=/root/.kube/config
+  script:
+    - git clone -b main ${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${DEPLOY_REPO} ansible
+    - ansible-playbook -i ansible/inventory/hosts --extra-vars "MODULE=${CI_PROJECT_NAME} PROJECT_DIR=${CI_PROJECT_DIR} PROJECT_NAME=${CI_COMMIT_REF_NAME} IMAGE_REGISTRY=${IMAGE_REGISTRY} COMMIT_TAG=${CI_COMMIT_SHORT_SHA}" ansible/deploy.yml
+  rules:
+    - if: "$CI_COMMIT_REF_NAME =~ /^develop.*/"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - job_execution_timeout
+      - unknown_failure
+  tags:
+    - k8s
+    - edu
+
+publish:
+  stage: publish
+  before_script:
+    - mkdir -p ${CI_PROJECT_DIR}/crt
+    - echo "${NEXUS_SSL_KEY}" | base64 -d > ${CI_PROJECT_DIR}/crt/nexus.jks
+  script:
+  # exlude tests
+    - gradle publish -x test
+  artifacts:
+    when: always
+    expire_in: 3 days
+    paths:
+      - build/libs/axenapi-api.zip
+      - ${CI_PROJECT_DIR}/crt/nexus.jks
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - job_execution_timeout
+      - unknown_failure
+  tags:
+    - k8s
+    - edu

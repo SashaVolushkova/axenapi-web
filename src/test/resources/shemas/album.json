@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "properties": {
+    "albumId": {
+      "type": "string",
+      "pattern": "ALB-[0-9]{5}"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "releaseDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "artists": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 2 },
+          "role": {
+            "type": "string",
+            "enum": ["vocal", "instrumental", "producer"]
+          }
+        },
+        "required": ["name", "role"]
+      },
+      "minItems": 1
+    },
+    "tracks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "trackNumber": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string", "minLength": 2 },
+          "duration": { "type": "number", "minimum": 0.5 },
+          "features": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["trackNumber", "title", "duration"]
+      },
+      "minItems": 1
+    },
+    "label": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "location": { "type": "string" }
+      },
+      "required": ["name"]
+    }
+  },
+  "required": ["albumId", "title", "releaseDate", "artists", "tracks"]
+}

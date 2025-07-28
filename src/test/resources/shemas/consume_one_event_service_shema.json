@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ServiceGraph",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "belongsToGraph": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["SERVICE", "TOPIC"] },
+          "brokerType": { "type": ["string", "null"] },
+          "methodType": { "type": ["string", "null"] }
+        },
+        "required": ["id", "belongsToGraph", "name", "type"],
+        "additionalProperties": false
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "toId": { "type": "string", "format": "uuid" },
+          "fromId": { "type": "string", "format": "uuid" },
+          "eventId": { "type": "string", "format": "uuid" },
+          "group": { "type": "string" }
+        },
+        "required": ["toId", "fromId", "eventId", "group"],
+        "additionalProperties": false
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "schema": { "type": "string" },
+          "eventType": { "type": "string" }
+        },
+        "required": ["id", "name", "schema"],
+        "additionalProperties": false
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {}
+    }
+  },
+  "required": ["name", "nodes", "links", "events"],
+  "additionalProperties": false
+}

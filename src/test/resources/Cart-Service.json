@@ -1,0 +1,97 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Cart-Service",
+    "description" : "AxenAPI Specification for Cart-Service",
+    "version" : "1.0.0"
+  },
+  "paths" : {
+    "/api/cart" : {
+      "summary" : "Retrieve a specific event by ID",
+      "get" : {
+        "tags" : [ "HTTP" ],
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "ID of the event to retrieve",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CartRequested"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Event not found"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "HTTP" ],
+        "parameters" : [ {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "ID of the event to retrieve",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Event retrieved successfully",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CartRequested"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Event not found"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CartItemAdded" : {
+        "type" : "object",
+        "properties" : {
+          "productId" : {
+            "type" : "string"
+          },
+          "quantity" : {
+            "type" : "integer"
+          }
+        },
+        "x-outgoing" : {
+          "topics" : [ "KAFKA/Cart-Topic" ]
+        }
+      },
+      "CartRequested" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "string"
+          }
+        },
+        "x-incoming" : {
+          "topics" : [ "frontend-api" ],
+          "tags" : [ "HTTP" ]
+        }
+      }
+    }
+  }
+}

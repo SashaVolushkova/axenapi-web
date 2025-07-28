@@ -1,0 +1,16 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "End Node(SERVICE1)",
+    "description" : "API specification for End Node(SERVICE1)",
+    "version" : "1.0.0"
+  },
+  "paths" : { },
+  "components" : {
+    "schemas" : {
+      "EventSchema" : {
+        "type" : "string"
+      }
+    }
+  }
+}

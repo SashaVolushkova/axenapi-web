@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: valery.churlyaev
+  - include:
+      file: changes/01-init-change-set.sql
+      relativeToChangelogFile: true

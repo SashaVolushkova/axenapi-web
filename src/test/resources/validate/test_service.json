@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Test Service",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/kafka/group1/topic1/Event1": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Event1": {
+        "type": "object",
+        "x-incoming": {
+          "topics": ["topic1"]
+        }
+      }
+    }
+  }
+}
