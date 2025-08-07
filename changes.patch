@@ -1,0 +1,2179 @@
+diff --git a/EVENTGRAPH_TO_OPENAPI_RULES.md b/EVENTGRAPH_TO_OPENAPI_RULES.md
+new file mode 100644
+index 0000000..40051f2
+--- /dev/null
++++ b/EVENTGRAPH_TO_OPENAPI_RULES.md
+@@ -0,0 +1,55 @@
++# Translation Rules from EventGraphDTO to OpenAPI Specification
++
++This document outlines the rules for translating an `EventGraphDTO` object into an OpenAPI 3.0 specification.
++
++## 1. Basic Structure
++
++- For each `NodeDTO` of type `SERVICE` in the `EventGraphDTO`, a new OpenAPI specification is created.
++- The `info` section of the OpenAPI specification is populated with the service's name and a default description.
++- A `paths` object and a `components` object are initialized for each OpenAPI specification.
++
++## 2. Processing Links
++
++The links in the `EventGraphDTO` determine the paths and schemas in the OpenAPI specification. The following link types are processed:
++
++### 2.1. `TOPIC` to `SERVICE`
++
++This represents a message being consumed by a service from a topic.
++
++- A new path is created in the OpenAPI specification. The path is constructed as follows:
++  - **Kafka:** `/{broker_type}/{group}/{topic_name}/{event_name}`
++  - **JMS:** `/{broker_type}/{topic_name}/{event_name}`
++  - **RabbitMQ:** `/{broker_type}/{topic_name}/{event_name}`
++  - **Undefined Broker:** `/undefined_broker/{topic_name}/{event_name}`
++- A `post` operation is added to the path.
++- If the `EventDTO` associated with the link is not null, a new schema is created in the `components/schemas` section of the OpenAPI specification. The schema is named after the event.
++- The schema is extended with an `x-incoming` attribute, which contains the topic name and any tags associated with the link or event.
++
++### 2.2. `SERVICE` to `TOPIC`
++
++This represents a message being produced by a service to a topic.
++
++- If the `EventDTO` associated with the link is not null, a new schema is created in the `components/schemas` section of the OpenAPI specification. The schema is named after the event.
++- The schema is extended with an `x-outgoing` attribute, which contains the topic name and any tags associated with the link or event.
++
++### 2.3. `HTTP` to `SERVICE`
++
++This represents an HTTP request to a service.
++
++- A new path is created in the OpenAPI specification based on the `nodeUrl` of the HTTP node.
++- An operation is added to the path corresponding to the `methodType` of the HTTP node.
++- If the `EventDTO` associated with the link is not null, a new schema is created in the `components/schemas` section of the OpenAPI specification. The schema is named after the event.
++- The schema is extended with an `x-http-name` attribute, which contains the name of the HTTP node.
++- The schema is also extended with an `x-incoming` attribute.
++
++## 3. Schemas
++
++- Schemas are created from the `schema` field of the `EventDTO`.
++- If a schema for a given event name already exists in the OpenAPI specification, it is reused.
++
++## 4. Extensions
++
++- `x-documentation-file-links`: This extension is added to services and paths to link to external documentation.
++- `x-incoming`: This extension is added to schemas to indicate the source of an event (e.g., a topic).
++- `x-outgoing`: This extension is added to schemas to indicate the destination of an event (e.g., a topic).
++- `x-http-name`: This extension is added to schemas to indicate the name of the HTTP endpoint that triggers the event.
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/generate/SpecificationGenerator.java b/src/main/java/pro/axenix_innovation/axenapi/web/generate/SpecificationGenerator.java
+index 771dcd4..f5771f8 100644
+--- a/src/main/java/pro/axenix_innovation/axenapi/web/generate/SpecificationGenerator.java
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/generate/SpecificationGenerator.java
+@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
+ import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
+-import pro.axenix_innovation.axenapi.web.util.OpenAPIGenerator;
++import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
+
+ import java.util.HashMap;
+ import java.util.Map;
+@@ -23,7 +23,7 @@ public class SpecificationGenerator {
+
+         try {
+             EventGraphFacade facade = new EventGraphFacade(eventGraph);
+-            Map<String, OpenAPI> openAPIMap = OpenAPIGenerator.getOpenAPISpecifications(facade);
++            Map<String, OpenAPI> openAPIMap = OpenApiGeneratorFacade.getOpenAPISpecifications(facade);
+
+             if (openAPIMap == null || openAPIMap.isEmpty()) {
+                 return Map.of("error", "Translator returned empty OpenAPI specification");
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/service/MarkdownSpecService.java b/src/main/java/pro/axenix_innovation/axenapi/web/service/MarkdownSpecService.java
+index 5c9601a..a2caab2 100644
+--- a/src/main/java/pro/axenix_innovation/axenapi/web/service/MarkdownSpecService.java
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/service/MarkdownSpecService.java
+@@ -11,10 +11,11 @@ import org.openapitools.codegen.languages.MarkdownDocumentationCodegen;
+ import org.springframework.stereotype.Service;
+ import org.springframework.transaction.annotation.Transactional;
+ import pro.axenix_innovation.axenapi.web.generate.SpecificationMarkdownHandler;
++import pro.axenix_innovation.axenapi.web.generate.SpecificationMarkdownHandler;
+ import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
+ import pro.axenix_innovation.axenapi.web.model.*;
+ import pro.axenix_innovation.axenapi.web.repository.MarkdownSpecificationRepository;
+-import pro.axenix_innovation.axenapi.web.util.OpenAPIGenerator;
++import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
+
+ import java.io.File;
+ import java.io.IOException;
+@@ -86,7 +87,7 @@ public class MarkdownSpecService {
+
+         log.info(messageHelper.getMessage("axenapi.info.start.spec.gen.graph", graphDTO.getName()));
+
+-        Map<String, OpenAPI> openAPISpecifications = OpenAPIGenerator.getOpenAPISpecifications(new EventGraphFacade(graphDTO));
++        Map<String, OpenAPI> openAPISpecifications = OpenApiGeneratorFacade.getOpenAPISpecifications(new EventGraphFacade(graphDTO));
+
+         if (openAPISpecifications == null || openAPISpecifications.isEmpty()) {
+             log.error(messageHelper.getMessage(ERROR_NO_YAML_CONTENT));
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/service/SpecService.java b/src/main/java/pro/axenix_innovation/axenapi/web/service/SpecService.java
+index e1e71cd..03b599d 100644
+--- a/src/main/java/pro/axenix_innovation/axenapi/web/service/SpecService.java
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/service/SpecService.java
+@@ -9,10 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ import pro.axenix_innovation.axenapi.web.entity.AppCodeMessage;
+ import pro.axenix_innovation.axenapi.web.generate.SpecificationGenerator;
++import pro.axenix_innovation.axenapi.web.generate.SpecificationGenerator;
+ import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
+ import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
+ import pro.axenix_innovation.axenapi.web.model.GenerateSpecPost200Response;
+-import pro.axenix_innovation.axenapi.web.util.OpenAPIGenerator;
++import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
+ import pro.axenix_innovation.axenapi.web.validate.EventGraphDTOValidator;
+
+ import java.util.Map;
+@@ -137,7 +138,7 @@ public class SpecService {
+
+     public String getSpecByServiceId(EventGraphDTO eventGraphDTO, UUID serviceID) throws JsonProcessingException {
+         EventGraphFacade facade = new EventGraphFacade(eventGraphDTO);
+-        OpenAPI openAPISpecByServiceId = OpenAPIGenerator.getOpenAPISpecByServiceId(facade, serviceID);
++        OpenAPI openAPISpecByServiceId = OpenApiGeneratorFacade.getOpenAPISpecByServiceId(facade, serviceID);
+         if(openAPISpecByServiceId == null) {
+             log.error(MessageHelper.getStaticMessage(ERROR_WHILE_GET_OPEN_API_SPEC_SERVICE, serviceID));
+             return "";
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/util/OpenAPIGenerator.java b/src/main/java/pro/axenix_innovation/axenapi/web/util/OpenAPIGenerator.java
+deleted file mode 100644
+index 7e35e03..0000000
+--- a/src/main/java/pro/axenix_innovation/axenapi/web/util/OpenAPIGenerator.java
++++ /dev/null
+@@ -1,456 +0,0 @@
+-package pro.axenix_innovation.axenapi.web.util;
+-
+-import com.fasterxml.jackson.core.JsonProcessingException;
+-import io.swagger.v3.oas.models.*;
+-import io.swagger.v3.oas.models.info.Info;
+-import io.swagger.v3.oas.models.media.*;
+-import io.swagger.v3.oas.models.parameters.Parameter;
+-import io.swagger.v3.oas.models.responses.ApiResponse;
+-import io.swagger.v3.oas.models.responses.ApiResponses;
+-import lombok.extern.slf4j.Slf4j;
+-import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
+-import pro.axenix_innovation.axenapi.web.model.EventDTO;
+-import pro.axenix_innovation.axenapi.web.model.LinkDTO;
+-import pro.axenix_innovation.axenapi.web.model.NodeDTO;
+-import pro.axenix_innovation.axenapi.web.service.MessageHelper;
+-
+-import java.util.*;
+-
+-import static pro.axenix_innovation.axenapi.web.entity.AppCodeMessageKey.*;
+-
+-/**
+- * Utility class for generating OpenAPI specifications from EventGraphFacade.
+- */
+-@Slf4j
+-public class OpenAPIGenerator {
+-
+-    /**
+-     * Generates OpenAPI specifications for all service nodes in the given EventGraphFacade.
+-     *
+-     * @param eventGraph the EventGraphFacade containing nodes and links
+-     * @return a map of service names to their OpenAPI specifications
+-     * @throws JsonProcessingException if serialization fails
+-     */
+-    public static Map<String, OpenAPI> getOpenAPISpecifications(EventGraphFacade eventGraph) throws JsonProcessingException {
+-        logGraphInfo(eventGraph);
+-
+-        Map<String, OpenAPI> openAPIMap = createOpenAPIMap(eventGraph);
+-        processLinks(eventGraph, openAPIMap);
+-
+-        log.info(MessageHelper.getStaticMessage("axenapi.info.finish.create.open.api.spec.service", openAPIMap.size()));
+-        return openAPIMap;
+-    }
+-
+-    /**
+-     * Retrieves the OpenAPI specification for a specific service node by its UUID.
+-     *
+-     * @param eventGraph the EventGraphFacade containing the service node
+-     * @param serviceID the UUID of the service node
+-     * @return the OpenAPI specification for the service, or null if not found
+-     * @throws JsonProcessingException if serialization fails
+-     */
+-    public static OpenAPI getOpenAPISpecByServiceId(EventGraphFacade eventGraph, UUID serviceID) throws JsonProcessingException {
+-        NodeDTO nodeById = eventGraph.getNodeById(serviceID);
+-        if(nodeById == null) {
+-            log.warn(MessageHelper.getStaticMessage(WARN_NODE_NOT_FOUND, serviceID));
+-            return null;
+-        }
+-        String name = nodeById.getName();
+-        Map<String, OpenAPI> openAPISpecifications = getOpenAPISpecifications(eventGraph);
+-        return openAPISpecifications.get(name);
+-    }
+-
+-    private static void logGraphInfo(EventGraphFacade eventGraph) {
+-        log.info(MessageHelper.getStaticMessage("axenapi.info.received.graph.nodes.links",
+-                eventGraph.getNodes().size(),
+-                eventGraph.getLinks().size()
+-        ));
+-
+-        if (log.isDebugEnabled()) {
+-            for (NodeDTO node : eventGraph.getNodes()) {
+-                log.debug("Node: id={}, name='{}', type={}, brokerType={}",
+-                        node.getId(), node.getName(), node.getType(), node.getBrokerType());
+-            }
+-            for (LinkDTO link : eventGraph.getLinks()) {
+-                log.debug("Link: id={}, fromId={}, toId={}, eventId={}, group={}",
+-                        link.getId(), link.getFromId(), link.getToId(), link.getEventId(), link.getGroup());
+-            }
+-        }
+-    }
+-
+-    private static Map<String, OpenAPI> createOpenAPIMap(EventGraphFacade eventGraph) {
+-        return eventGraph.getNodes().stream()
+-                .filter(node -> node.getType() == NodeDTO.TypeEnum.SERVICE)
+-                .collect(
+-                        HashMap::new,
+-                        (map, node) -> {
+-                            OpenAPI openAPI = createOpenAPI(node);
+-                            if (node.getDocumentationFileLinks() != null && !node.getDocumentationFileLinks().isEmpty()) {
+-                                openAPI.addExtension("x-documentation-file-links", new ArrayList<>(node.getDocumentationFileLinks()));
+-                            }
+-                            map.put(node.getName(), openAPI);
+-                            log.info(MessageHelper.getStaticMessage("axenapi.info.created.open.api.spec.service.node",
+-                                    node.getName()));
+-                        },
+-                        Map::putAll
+-                );
+-    }
+-
+-    private static void processLinks(EventGraphFacade eventGraph, Map<String, OpenAPI> openAPIMap) throws JsonProcessingException {
+-        for (LinkDTO link : eventGraph.getLinks()) {
+-            NodeDTO toNode = eventGraph.getNodeById(link.getToId());
+-            NodeDTO fromNode = eventGraph.getNodeById(link.getFromId());
+-            EventDTO event = eventGraph.getEventById(link.getEventId());
+-
+-            if (toNode == null || fromNode == null) {
+-                log.warn(MessageHelper.getStaticMessage(WARN_SKIPPING_LINK, link.getToId(), link.getFromId(), link.getEventId()));
+-                continue;
+-            }
+-
+-            // TOPIC → SERVICE
+-            if (toNode.getType() == NodeDTO.TypeEnum.SERVICE && fromNode.getType() == NodeDTO.TypeEnum.TOPIC) {
+-                processIncomingTopicToService(eventGraph, openAPIMap, link, toNode, fromNode, event);
+-            }
+-
+-            // SERVICE → TOPIC
+-            if (fromNode.getType() == NodeDTO.TypeEnum.SERVICE && toNode.getType() == NodeDTO.TypeEnum.TOPIC) {
+-                processOutgoingServiceToTopic(openAPIMap, link, fromNode, toNode, event);
+-            }
+-
+-            // HTTP → SERVICE
+-            if (toNode.getType() == NodeDTO.TypeEnum.SERVICE && fromNode.getType() == NodeDTO.TypeEnum.HTTP) {
+-                processHttpToService(eventGraph, openAPIMap, link, toNode, fromNode, event);
+-            }
+-        }
+-    }
+-
+-    private static void processIncomingTopicToService(EventGraphFacade eventGraph, Map<String, OpenAPI> openAPIMap,
+-                                                      LinkDTO link, NodeDTO toNode, NodeDTO fromNode, EventDTO event)
+-            throws JsonProcessingException {
+-        OpenAPI openAPI = openAPIMap.get(toNode.getName());
+-        if (openAPI == null) {
+-            log.warn(MessageHelper.getStaticMessage(WARN_NO_OPEN_API_SPEC_FOUND_SKIP_INC, toNode.getName()));
+-            return;
+-        }
+-        ensureComponents(openAPI);
+-
+-        String broker;
+-        if (fromNode.getBrokerType() == null) {
+-            broker = "undefined";
+-        } else {
+-            broker = fromNode.getBrokerType().toString().toLowerCase();
+-        }
+-
+-        String path;
+-        if (event == null) {
+-            // Handle case when event is null - create path with undefined_event
+-            switch (broker) {
+-                case "kafka":
+-                    String group = Optional.ofNullable(link.getGroup()).filter(g -> !g.isBlank()).orElse("default");
+-                    path = "/kafka/" + group + "/" + fromNode.getName() + "/undefined_event";
+-                    break;
+-                case "jms":
+-                    path = "/jms/" + fromNode.getName() + "/undefined_event";
+-                    break;
+-                case "rabbitmq":
+-                    path = "/rabbitmq/" + fromNode.getName() + "/undefined_event";
+-                    break;
+-                case "undefined":
+-                    path = "/undefined_broker/" + fromNode.getName() + "/undefined_event";
+-                    break;
+-                default:
+-                    path = "/" + broker + "/" + fromNode.getName() + "/undefined_event";
+-                    log.info(MessageHelper.getStaticMessage("axenapi.info.broker.unrecognized.use.default", broker, path));
+-                    break;
+-            }
+-        } else {
+-            switch (broker) {
+-                case "kafka":
+-                    String group = Optional.ofNullable(link.getGroup()).filter(g -> !g.isBlank()).orElse("default");
+-                    path = "/kafka/" + group + "/" + fromNode.getName() + "/" + event.getName();
+-                    break;
+-                case "jms":
+-                    path = "/jms/" + fromNode.getName() + "/" + event.getName();
+-                    break;
+-                case "rabbitmq":
+-                    path = "/rabbitmq/" + fromNode.getName() + "/" + event.getName();
+-                    break;
+-                case "undefined":
+-                    path = "/undefined_broker/" + fromNode.getName() + "/" + event.getName();
+-                    break;
+-                default:
+-                    path = "/" + broker + "/" + fromNode.getName() + "/" + event.getName();
+-                    log.info(MessageHelper.getStaticMessage("axenapi.info.broker.unrecognized.use.default", broker, path));
+-                    break;
+-            }
+-        }
+-
+-        log.info(MessageHelper.getStaticMessage("axenapi.info.add.post.path.service", path, toNode.getName()));
+-
+-        Set<String> tags = new LinkedHashSet<>();
+-        if (!link.getTags().isEmpty()) {
+-            tags.addAll(link.getTags());
+-        }
+-        if (event != null && !event.getTags().isEmpty()) {
+-            tags.addAll(event.getTags());
+-        }
+-
+-        Operation postOp = new Operation().responses(createSimpleResponses());
+-        if (!tags.isEmpty()) {
+-            postOp.tags(new ArrayList<>(tags));
+-        }
+-
+-        PathItem pathItem = new PathItem().post(postOp);
+-        if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
+-            pathItem.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
+-        }
+-        openAPI.getPaths().addPathItem(path, pathItem);
+-
+-        if (event != null) {
+-            Schema<?> schema = getOrCreateSchema(openAPI, event);
+-            Map<String, Object> xIncoming = new LinkedHashMap<>();
+-            xIncoming.put("topics", List.of(fromNode.getName()));
+-            if (!tags.isEmpty()) {
+-                xIncoming.put("tags", new ArrayList<>(tags));
+-            }
+-            schema.addExtension("x-incoming", xIncoming);
+-
+-            if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
+-                schema.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
+-            }
+-
+-            openAPI.getComponents().addSchemas(event.getName(), schema);
+-        }
+-    }
+-
+-    private static void processOutgoingServiceToTopic(Map<String, OpenAPI> openAPIMap, LinkDTO link,
+-                                                      NodeDTO fromNode, NodeDTO toNode, EventDTO event)
+-            throws JsonProcessingException {
+-        OpenAPI openAPI = openAPIMap.get(fromNode.getName());
+-        if (openAPI == null) {
+-            log.warn(MessageHelper.getStaticMessage(WARN_NO_OPEN_API_SPEC_FOUND_SKIP_OUT, fromNode.getName()));
+-            return;
+-        }
+-        ensureComponents(openAPI);
+-
+-        if (event == null) {
+-            // If event is null, we can't create a schema, so just return
+-            log.warn("Event is null for outgoing link from service {} to topic {}, skipping schema creation",
+-                    fromNode.getName(), toNode.getName());
+-            return;
+-        }
+-
+-        Schema<?> schema = getOrCreateSchema(openAPI, event);
+-        Map<String, Object> xOutgoing = new LinkedHashMap<>();
+-
+-        String topicSpec = toNode.getBrokerType() + "/" + toNode.getName();
+-        xOutgoing.put("topics", List.of(topicSpec));
+-
+-        Set<String> tags = new LinkedHashSet<>();
+-        if (!link.getTags().isEmpty()) {
+-            tags.addAll(link.getTags());
+-        }
+-        if (!event.getTags().isEmpty()) {
+-            tags.addAll(event.getTags());
+-        }
+-        if (!tags.isEmpty()) {
+-            xOutgoing.put("tags", new ArrayList<>(tags));
+-        }
+-
+-        schema.addExtension("x-outgoing", xOutgoing);
+-
+-        if (toNode.getDocumentationFileLinks() != null && !toNode.getDocumentationFileLinks().isEmpty()) {
+-            schema.addExtension("x-documentation-file-links",
+-                    new ArrayList<>(toNode.getDocumentationFileLinks()));
+-        }
+-
+-        openAPI.getComponents().addSchemas(event.getName(), schema);
+-    }
+-
+-    private static void processHttpToService(EventGraphFacade eventGraph, Map<String, OpenAPI> openAPIMap,
+-                                             LinkDTO link, NodeDTO toNode, NodeDTO fromNode, EventDTO event)
+-            throws JsonProcessingException {
+-        OpenAPI openAPI = openAPIMap.get(toNode.getName());
+-        if (openAPI == null) {
+-            log.warn(MessageHelper.getStaticMessage(WARN_NO_OPEN_API_SPEC_FOUND_SKIP_HTTP, toNode.getName()));
+-            return;
+-        }
+-        ensureComponents(openAPI);
+-
+-        String httpPath = fromNode.getNodeUrl();
+-        if (httpPath == null || httpPath.isBlank()) {
+-            log.warn(MessageHelper.getStaticMessage(WARN_HTTP_URL_SKIP_LINK, fromNode.getName()));
+-            return;
+-        }
+-
+-        log.info(MessageHelper.getStaticMessage("axenapi.info.add.get.patch.path.service", httpPath, toNode.getName()));
+-
+-        if (event == null) {
+-            Operation operation = new Operation().responses(new ApiResponses()
+-                    .addApiResponse("200", new ApiResponse().description("OK")));
+-
+-            PathItem pathItem = new PathItem();
+-
+-            // Use the HTTP method from the node, default to GET if not specified
+-            NodeDTO.MethodTypeEnum methodType = fromNode.getMethodType();
+-            if (methodType == null) {
+-                methodType = NodeDTO.MethodTypeEnum.GET;
+-            }
+-
+-            switch (methodType) {
+-                case GET:
+-                    pathItem.get(operation);
+-                    break;
+-                case POST:
+-                    pathItem.post(operation);
+-                    break;
+-                case PUT:
+-                    pathItem.put(operation);
+-                    break;
+-                case DELETE:
+-                    pathItem.delete(operation);
+-                    break;
+-                case PATCH:
+-                    pathItem.patch(operation);
+-                    break;
+-                case HEAD:
+-                    pathItem.head(operation);
+-                    break;
+-                case OPTIONS:
+-                    pathItem.options(operation);
+-                    break;
+-                case TRACE:
+-                    pathItem.trace(operation);
+-                    break;
+-                default:
+-                    pathItem.get(operation);
+-                    break;
+-            }
+-
+-            openAPI.getPaths().addPathItem(httpPath, pathItem);
+-            return;
+-        }
+-
+-        Set<String> httpTags = new LinkedHashSet<>();
+-        httpTags.add("HTTP");
+-        if (link.getTags() != null) {
+-            httpTags.addAll(link.getTags());
+-        }
+-        if (event.getTags() != null) {
+-            httpTags.addAll(event.getTags());
+-        }
+-
+-        List<String> finalTags = new ArrayList<>(httpTags);
+-
+-        Operation getOp = new Operation()
+-                .responses(createHttpResponses(event.getName()))
+-                .parameters(List.of(createEventIdPathParameter()));
+-        Operation patchOp = new Operation()
+-                .responses(createHttpResponses(event.getName()))
+-                .parameters(List.of(createEventIdPathParameter()));
+-
+-        if (!finalTags.isEmpty()) {
+-            getOp.tags(finalTags);
+-            patchOp.tags(finalTags);
+-        }
+-
+-        PathItem pathItem = new PathItem()
+-                .summary("Retrieve a specific event by ID")
+-                .description(fromNode.getNodeDescription())
+-                .get(getOp)
+-                .patch(patchOp);
+-
+-        if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
+-            pathItem.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
+-        }
+-
+-        openAPI.getPaths().addPathItem(httpPath, pathItem);
+-
+-        Schema<?> schema = getOrCreateSchema(openAPI, event);
+-
+-        schema.addExtension("x-http-name", fromNode.getName());
+-
+-        Map<String, Object> xIncoming = new LinkedHashMap<>();
+-        xIncoming.put("topics", List.of(fromNode.getName()));
+-        if (!httpTags.isEmpty()) {
+-            xIncoming.put("tags", new ArrayList<>(httpTags));
+-        }
+-        schema.addExtension("x-incoming", xIncoming);
+-
+-        if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
+-            schema.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
+-        }
+-
+-        openAPI.getComponents().addSchemas(event.getName(), schema);
+-    }
+-
+-    private static ApiResponses createSimpleResponses() {
+-        ApiResponses apiResponses = new ApiResponses();
+-        ApiResponse apiResponse = new ApiResponse();
+-        apiResponse.setDescription("Event sent successfully");
+-        apiResponses.addApiResponse("200", apiResponse);
+-        return apiResponses;
+-    }
+-
+-    private static OpenAPI createOpenAPI(NodeDTO node) {
+-        OpenAPI openAPI = new OpenAPI();
+-        Info info = new Info();
+-        info.setVersion("1.0.0"); // TODO get version dynamically if needed
+-        info.setTitle(node.getName());
+-        info.setDescription("AxenAPI Specification for " + node.getName());
+-        openAPI.setInfo(info);
+-        openAPI.setPaths(new Paths());
+-        openAPI.setComponents(new Components());
+-        openAPI.getComponents().setSchemas(new HashMap<>());
+-        return openAPI;
+-    }
+-
+-    private static void ensureComponents(OpenAPI openAPI) {
+-        if (openAPI.getComponents() == null) {
+-            openAPI.setComponents(new Components());
+-        }
+-    }
+-
+-    private static Schema<?> getOrCreateSchema(OpenAPI openAPI, EventDTO event) throws JsonProcessingException {
+-        String eventName = event.getName();
+-        if (eventName == null || eventName.isBlank()) {
+-            throw new IllegalArgumentException("Event name is missing");
+-        }
+-
+-        Map<String, Schema> schemas = openAPI.getComponents().getSchemas();
+-        Schema<?> schema = schemas.get(eventName);
+-        if (schema == null) {
+-            schema = SchemaProcessor.deserializeSchema(event.getSchema());
+-            schema.setExtensions(new HashMap<>());
+-            schemas.put(eventName, schema);
+-        }
+-        return schema;
+-    }
+-
+-    private static ApiResponses createHttpResponses(String refName) {
+-        if (refName == null || refName.isBlank()) {
+-            throw new IllegalArgumentException("Reference name for schema is missing");
+-        }
+-
+-        ApiResponses responses = new ApiResponses();
+-
+-        ApiResponse successResponse = new ApiResponse().description("Event retrieved successfully")
+-                .content(new Content().addMediaType("application/json",
+-                        new MediaType().schema(new Schema<>().$ref("#/components/schemas/" + refName))));
+-
+-        ApiResponse notFoundResponse = new ApiResponse().description("Event not found");
+-
+-        responses.addApiResponse("200", successResponse);
+-        responses.addApiResponse("404", notFoundResponse);
+-        return responses;
+-    }
+-
+-    private static Parameter createEventIdPathParameter() {
+-        return new Parameter()
+-                .name("eventId")
+-                .in("path")
+-                .description("ID of the event to retrieve")
+-                .required(true)
+-                .schema(new StringSchema());
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/HttpToServiceLinkProcessor.java b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/HttpToServiceLinkProcessor.java
+new file mode 100644
+index 0000000..16a32ff
+--- /dev/null
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/HttpToServiceLinkProcessor.java
+@@ -0,0 +1,138 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import io.swagger.v3.oas.models.Operation;
++import io.swagger.v3.oas.models.PathItem;
++import io.swagger.v3.oas.models.media.Schema;
++import io.swagger.v3.oas.models.responses.ApiResponse;
++import io.swagger.v3.oas.models.responses.ApiResponses;
++import lombok.extern.slf4j.Slf4j;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.util.*;
++
++import static pro.axenix_innovation.axenapi.web.entity.AppCodeMessageKey.WARN_HTTP_URL_SKIP_LINK;
++import static pro.axenix_innovation.axenapi.web.entity.AppCodeMessageKey.WARN_NO_OPEN_API_SPEC_FOUND_SKIP_HTTP;
++
++@Slf4j
++public class HttpToServiceLinkProcessor {
++    public void process(Map<String, OpenAPI> openApiMap, LinkDTO link, NodeDTO toNode, NodeDTO fromNode, EventDTO event)
++            throws JsonProcessingException {
++        OpenAPI openAPI = openApiMap.get(toNode.getName());
++        if (openAPI == null) {
++            log.warn(MessageHelper.getStaticMessage(WARN_NO_OPEN_API_SPEC_FOUND_SKIP_HTTP, toNode.getName()));
++            return;
++        }
++        OpenApiHelper.ensureComponents(openAPI);
++
++        String httpPath = fromNode.getNodeUrl();
++        if (httpPath == null || httpPath.isBlank()) {
++            log.warn(MessageHelper.getStaticMessage(WARN_HTTP_URL_SKIP_LINK, fromNode.getName()));
++            return;
++        }
++
++        log.info(MessageHelper.getStaticMessage("axenapi.info.add.get.patch.path.service", httpPath, toNode.getName()));
++
++        if (event == null) {
++            Operation operation = new Operation().responses(new ApiResponses()
++                    .addApiResponse("200", new ApiResponse().description("OK")));
++
++            PathItem pathItem = new PathItem();
++
++            // Use the HTTP method from the node, default to GET if not specified
++            NodeDTO.MethodTypeEnum methodType = fromNode.getMethodType();
++            if (methodType == null) {
++                methodType = NodeDTO.MethodTypeEnum.GET;
++            }
++
++            switch (methodType) {
++                case GET:
++                    pathItem.get(operation);
++                    break;
++                case POST:
++                    pathItem.post(operation);
++                    break;
++                case PUT:
++                    pathItem.put(operation);
++                    break;
++                case DELETE:
++                    pathItem.delete(operation);
++                    break;
++                case PATCH:
++                    pathItem.patch(operation);
++                    break;
++                case HEAD:
++                    pathItem.head(operation);
++                    break;
++                case OPTIONS:
++                    pathItem.options(operation);
++                    break;
++                case TRACE:
++                    pathItem.trace(operation);
++                    break;
++                default:
++                    pathItem.get(operation);
++                    break;
++            }
++
++            openAPI.getPaths().addPathItem(httpPath, pathItem);
++            return;
++        }
++
++        Set<String> httpTags = new LinkedHashSet<>();
++        httpTags.add("HTTP");
++        if (link.getTags() != null) {
++            httpTags.addAll(link.getTags());
++        }
++        if (event.getTags() != null) {
++            httpTags.addAll(event.getTags());
++        }
++
++        List<String> finalTags = new ArrayList<>(httpTags);
++
++        Operation getOp = new Operation()
++                .responses(OpenApiHelper.createHttpResponses(event.getName()))
++                .parameters(List.of(OpenApiHelper.createEventIdPathParameter()));
++        Operation patchOp = new Operation()
++                .responses(OpenApiHelper.createHttpResponses(event.getName()))
++                .parameters(List.of(OpenApiHelper.createEventIdPathParameter()));
++
++        if (!finalTags.isEmpty()) {
++            getOp.tags(finalTags);
++            patchOp.tags(finalTags);
++        }
++
++        PathItem pathItem = new PathItem()
++                .summary("Retrieve a specific event by ID")
++                .description(fromNode.getNodeDescription())
++                .get(getOp)
++                .patch(patchOp);
++
++        if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
++            pathItem.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
++        }
++
++        openAPI.getPaths().addPathItem(httpPath, pathItem);
++
++        Schema<?> schema = OpenApiHelper.getOrCreateSchema(openAPI, event);
++
++        schema.addExtension("x-http-name", fromNode.getName());
++
++        Map<String, Object> xIncoming = new LinkedHashMap<>();
++        xIncoming.put("topics", List.of(fromNode.getName()));
++        if (!httpTags.isEmpty()) {
++            xIncoming.put("tags", new ArrayList<>(httpTags));
++        }
++        schema.addExtension("x-incoming", xIncoming);
++
++        if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
++            schema.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
++        }
++
++        openAPI.getComponents().addSchemas(event.getName(), schema);
++    }
++}
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiGeneratorFacade.java b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiGeneratorFacade.java
+new file mode 100644
+index 0000000..62e41d1
+--- /dev/null
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiGeneratorFacade.java
+@@ -0,0 +1,92 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import lombok.extern.slf4j.Slf4j;
++import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.util.Map;
++import java.util.UUID;
++
++import static pro.axenix_innovation.axenapi.web.entity.AppCodeMessageKey.WARN_NODE_NOT_FOUND;
++import static pro.axenix_innovation.axenapi.web.entity.AppCodeMessageKey.WARN_SKIPPING_LINK;
++
++@Slf4j
++public class OpenApiGeneratorFacade {
++
++    private static final ServiceOpenApiGenerator serviceOpenApiGenerator = new ServiceOpenApiGenerator();
++    private static final TopicToServiceLinkProcessor topicToServiceLinkProcessor = new TopicToServiceLinkProcessor();
++    private static final ServiceToTopicLinkProcessor serviceToTopicLinkProcessor = new ServiceToTopicLinkProcessor();
++    private static final HttpToServiceLinkProcessor httpToServiceLinkProcessor = new HttpToServiceLinkProcessor();
++
++    public static Map<String, OpenAPI> getOpenAPISpecifications(EventGraphFacade eventGraph) throws JsonProcessingException {
++        logGraphInfo(eventGraph);
++
++        Map<String, OpenAPI> openAPIMap = serviceOpenApiGenerator.createOpenAPIMap(eventGraph);
++        processLinks(eventGraph, openAPIMap);
++
++        log.info(MessageHelper.getStaticMessage("axenapi.info.finish.create.open.api.spec.service", openAPIMap.size()));
++        return openAPIMap;
++    }
++
++    public static OpenAPI getOpenAPISpecByServiceId(EventGraphFacade eventGraph, UUID serviceID) throws JsonProcessingException {
++        NodeDTO nodeById = eventGraph.getNodeById(serviceID);
++        if(nodeById == null) {
++            log.warn(MessageHelper.getStaticMessage(WARN_NODE_NOT_FOUND, serviceID));
++            return null;
++        }
++        String name = nodeById.getName();
++        Map<String, OpenAPI> openAPISpecifications = getOpenAPISpecifications(eventGraph);
++        return openAPISpecifications.get(name);
++    }
++
++    private static void logGraphInfo(EventGraphFacade eventGraph) {
++        log.info(MessageHelper.getStaticMessage("axenapi.info.received.graph.nodes.links",
++                eventGraph.getNodes().size(),
++                eventGraph.getLinks().size()
++        ));
++
++        if (log.isDebugEnabled()) {
++            for (NodeDTO node : eventGraph.getNodes()) {
++                log.debug("Node: id={}, name='{}', type={}, brokerType={}",
++                        node.getId(), node.getName(), node.getType(), node.getBrokerType());
++            }
++            for (LinkDTO link : eventGraph.getLinks()) {
++                log.debug("Link: id={}, fromId={}, toId={}, eventId={}, group={}",
++                        link.getId(), link.getFromId(), link.getToId(), link.getEventId(), link.getGroup());
++            }
++        }
++    }
++
++    private static void processLinks(EventGraphFacade eventGraph, Map<String, OpenAPI> openAPIMap) throws JsonProcessingException {
++        for (LinkDTO link : eventGraph.getLinks()) {
++            NodeDTO toNode = eventGraph.getNodeById(link.getToId());
++            NodeDTO fromNode = eventGraph.getNodeById(link.getFromId());
++            EventDTO event = eventGraph.getEventById(link.getEventId());
++
++            if (toNode == null || fromNode == null) {
++                log.warn(MessageHelper.getStaticMessage(WARN_SKIPPING_LINK, link.getToId(), link.getFromId(), link.getEventId()));
++                continue;
++            }
++
++            // TOPIC → SERVICE
++            if (toNode.getType() == NodeDTO.TypeEnum.SERVICE && fromNode.getType() == NodeDTO.TypeEnum.TOPIC) {
++                topicToServiceLinkProcessor.process(openAPIMap, link, toNode, fromNode, event);
++            }
++
++            // SERVICE → TOPIC
++            if (fromNode.getType() == NodeDTO.TypeEnum.SERVICE && toNode.getType() == NodeDTO.TypeEnum.TOPIC) {
++                serviceToTopicLinkProcessor.process(openAPIMap, link, fromNode, toNode, event);
++            }
++
++            // HTTP → SERVICE
++            if (toNode.getType() == NodeDTO.TypeEnum.SERVICE && fromNode.getType() == NodeDTO.TypeEnum.HTTP) {
++                httpToServiceLinkProcessor.process(openAPIMap, link, toNode, fromNode, event);
++            }
++        }
++    }
++}
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiHelper.java b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiHelper.java
+new file mode 100644
+index 0000000..a9e180d
+--- /dev/null
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiHelper.java
+@@ -0,0 +1,77 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.Components;
++import io.swagger.v3.oas.models.OpenAPI;
++import io.swagger.v3.oas.models.media.Content;
++import io.swagger.v3.oas.models.media.MediaType;
++import io.swagger.v3.oas.models.media.Schema;
++import io.swagger.v3.oas.models.media.StringSchema;
++import io.swagger.v3.oas.models.parameters.Parameter;
++import io.swagger.v3.oas.models.responses.ApiResponse;
++import io.swagger.v3.oas.models.responses.ApiResponses;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.util.SchemaProcessor;
++
++import java.util.HashMap;
++import java.util.Map;
++
++public class OpenApiHelper {
++
++    public static ApiResponses createSimpleResponses() {
++        ApiResponses apiResponses = new ApiResponses();
++        ApiResponse apiResponse = new ApiResponse();
++        apiResponse.setDescription("Event sent successfully");
++        apiResponses.addApiResponse("200", apiResponse);
++        return apiResponses;
++    }
++
++    public static void ensureComponents(OpenAPI openAPI) {
++        if (openAPI.getComponents() == null) {
++            openAPI.setComponents(new Components());
++        }
++    }
++
++    public static Schema<?> getOrCreateSchema(OpenAPI openAPI, EventDTO event) throws JsonProcessingException {
++        String eventName = event.getName();
++        if (eventName == null || eventName.isBlank()) {
++            throw new IllegalArgumentException("Event name is missing");
++        }
++
++        Map<String, Schema> schemas = openAPI.getComponents().getSchemas();
++        Schema<?> schema = schemas.get(eventName);
++        if (schema == null) {
++            schema = SchemaProcessor.deserializeSchema(event.getSchema());
++            schema.setExtensions(new HashMap<>());
++            schemas.put(eventName, schema);
++        }
++        return schema;
++    }
++
++    public static ApiResponses createHttpResponses(String refName) {
++        if (refName == null || refName.isBlank()) {
++            throw new IllegalArgumentException("Reference name for schema is missing");
++        }
++
++        ApiResponses responses = new ApiResponses();
++
++        ApiResponse successResponse = new ApiResponse().description("Event retrieved successfully")
++                .content(new Content().addMediaType("application/json",
++                        new MediaType().schema(new Schema<>().$ref("#/components/schemas/" + refName))));
++
++        ApiResponse notFoundResponse = new ApiResponse().description("Event not found");
++
++        responses.addApiResponse("200", successResponse);
++        responses.addApiResponse("404", notFoundResponse);
++        return responses;
++    }
++
++    public static Parameter createEventIdPathParameter() {
++        return new Parameter()
++                .name("eventId")
++                .in("path")
++                .description("ID of the event to retrieve")
++                .required(true)
++                .schema(new StringSchema());
++    }
++}
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceOpenApiGenerator.java b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceOpenApiGenerator.java
+new file mode 100644
+index 0000000..8d945e1
+--- /dev/null
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceOpenApiGenerator.java
+@@ -0,0 +1,49 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import io.swagger.v3.oas.models.Components;
++import io.swagger.v3.oas.models.OpenAPI;
++import io.swagger.v3.oas.models.Paths;
++import io.swagger.v3.oas.models.info.Info;
++import lombok.extern.slf4j.Slf4j;
++import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.Map;
++
++@Slf4j
++public class ServiceOpenApiGenerator {
++
++    public Map<String, OpenAPI> createOpenAPIMap(EventGraphFacade eventGraph) {
++        return eventGraph.getNodes().stream()
++                .filter(node -> node.getType() == NodeDTO.TypeEnum.SERVICE)
++                .collect(
++                        HashMap::new,
++                        (map, node) -> {
++                            OpenAPI openAPI = createOpenAPI(node);
++                            if (node.getDocumentationFileLinks() != null && !node.getDocumentationFileLinks().isEmpty()) {
++                                openAPI.addExtension("x-documentation-file-links", new ArrayList<>(node.getDocumentationFileLinks()));
++                            }
++                            map.put(node.getName(), openAPI);
++                            log.info(MessageHelper.getStaticMessage("axenapi.info.created.open.api.spec.service.node",
++                                    node.getName()));
++                        },
++                        Map::putAll
++                );
++    }
++
++    private OpenAPI createOpenAPI(NodeDTO node) {
++        OpenAPI openAPI = new OpenAPI();
++        Info info = new Info();
++        info.setVersion("1.0.0"); // TODO get version dynamically if needed
++        info.setTitle(node.getName());
++        info.setDescription("AxenAPI Specification for " + node.getName());
++        openAPI.setInfo(info);
++        openAPI.setPaths(new Paths());
++        openAPI.setComponents(new Components());
++        openAPI.getComponents().setSchemas(new HashMap<>());
++        return openAPI;
++    }
++}
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceToTopicLinkProcessor.java b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceToTopicLinkProcessor.java
+new file mode 100644
+index 0000000..197fbba
+--- /dev/null
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceToTopicLinkProcessor.java
+@@ -0,0 +1,60 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import io.swagger.v3.oas.models.media.Schema;
++import lombok.extern.slf4j.Slf4j;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.util.*;
++
++import static pro.axenix_innovation.axenapi.web.entity.AppCodeMessageKey.WARN_NO_OPEN_API_SPEC_FOUND_SKIP_OUT;
++
++@Slf4j
++public class ServiceToTopicLinkProcessor {
++    public void process(Map<String, OpenAPI> openApiMap, LinkDTO link, NodeDTO fromNode, NodeDTO toNode, EventDTO event)
++            throws JsonProcessingException {
++        OpenAPI openAPI = openApiMap.get(fromNode.getName());
++        if (openAPI == null) {
++            log.warn(MessageHelper.getStaticMessage(WARN_NO_OPEN_API_SPEC_FOUND_SKIP_OUT, fromNode.getName()));
++            return;
++        }
++        OpenApiHelper.ensureComponents(openAPI);
++
++        if (event == null) {
++            // If event is null, we can't create a schema, so just return
++            log.warn("Event is null for outgoing link from service {} to topic {}, skipping schema creation",
++                    fromNode.getName(), toNode.getName());
++            return;
++        }
++
++        Schema<?> schema = OpenApiHelper.getOrCreateSchema(openAPI, event);
++        Map<String, Object> xOutgoing = new LinkedHashMap<>();
++
++        String topicSpec = toNode.getBrokerType() + "/" + toNode.getName();
++        xOutgoing.put("topics", List.of(topicSpec));
++
++        Set<String> tags = new LinkedHashSet<>();
++        if (!link.getTags().isEmpty()) {
++            tags.addAll(link.getTags());
++        }
++        if (!event.getTags().isEmpty()) {
++            tags.addAll(event.getTags());
++        }
++        if (!tags.isEmpty()) {
++            xOutgoing.put("tags", new ArrayList<>(tags));
++        }
++
++        schema.addExtension("x-outgoing", xOutgoing);
++
++        if (toNode.getDocumentationFileLinks() != null && !toNode.getDocumentationFileLinks().isEmpty()) {
++            schema.addExtension("x-documentation-file-links",
++                    new ArrayList<>(toNode.getDocumentationFileLinks()));
++        }
++
++        openAPI.getComponents().addSchemas(event.getName(), schema);
++    }
++}
+diff --git a/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/TopicToServiceLinkProcessor.java b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/TopicToServiceLinkProcessor.java
+new file mode 100644
+index 0000000..4edd468
+--- /dev/null
++++ b/src/main/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/TopicToServiceLinkProcessor.java
+@@ -0,0 +1,117 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import io.swagger.v3.oas.models.Operation;
++import io.swagger.v3.oas.models.PathItem;
++import io.swagger.v3.oas.models.media.Schema;
++import lombok.extern.slf4j.Slf4j;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.util.*;
++
++import static pro.axenix_innovation.axenapi.web.entity.AppCodeMessageKey.WARN_NO_OPEN_API_SPEC_FOUND_SKIP_INC;
++
++@Slf4j
++public class TopicToServiceLinkProcessor {
++    public void process(Map<String, OpenAPI> openApiMap, LinkDTO link, NodeDTO toNode, NodeDTO fromNode, EventDTO event)
++            throws JsonProcessingException {
++        OpenAPI openAPI = openApiMap.get(toNode.getName());
++        if (openAPI == null) {
++            log.warn(MessageHelper.getStaticMessage(WARN_NO_OPEN_API_SPEC_FOUND_SKIP_INC, toNode.getName()));
++            return;
++        }
++        OpenApiHelper.ensureComponents(openAPI);
++
++        String broker;
++        if (fromNode.getBrokerType() == null) {
++            broker = "undefined";
++        } else {
++            broker = fromNode.getBrokerType().toString().toLowerCase();
++        }
++
++        String path;
++        if (event == null) {
++            // Handle case when event is null - create path with undefined_event
++            switch (broker) {
++                case "kafka":
++                    String group = Optional.ofNullable(link.getGroup()).filter(g -> !g.isBlank()).orElse("default");
++                    path = "/kafka/" + group + "/" + fromNode.getName() + "/undefined_event";
++                    break;
++                case "jms":
++                    path = "/jms/" + fromNode.getName() + "/undefined_event";
++                    break;
++                case "rabbitmq":
++                    path = "/rabbitmq/" + fromNode.getName() + "/undefined_event";
++                    break;
++                case "undefined":
++                    path = "/undefined_broker/" + fromNode.getName() + "/undefined_event";
++                    break;
++                default:
++                    path = "/" + broker + "/" + fromNode.getName() + "/undefined_event";
++                    log.info(MessageHelper.getStaticMessage("axenapi.info.broker.unrecognized.use.default", broker, path));
++                    break;
++            }
++        } else {
++            switch (broker) {
++                case "kafka":
++                    String group = Optional.ofNullable(link.getGroup()).filter(g -> !g.isBlank()).orElse("default");
++                    path = "/kafka/" + group + "/" + fromNode.getName() + "/" + event.getName();
++                    break;
++                case "jms":
++                    path = "/jms/" + fromNode.getName() + "/" + event.getName();
++                    break;
++                case "rabbitmq":
++                    path = "/rabbitmq/" + fromNode.getName() + "/" + event.getName();
++                    break;
++                case "undefined":
++                    path = "/undefined_broker/" + fromNode.getName() + "/" + event.getName();
++                    break;
++                default:
++                    path = "/" + broker + "/" + fromNode.getName() + "/" + event.getName();
++                    log.info(MessageHelper.getStaticMessage("axenapi.info.broker.unrecognized.use.default", broker, path));
++                    break;
++            }
++        }
++
++        log.info(MessageHelper.getStaticMessage("axenapi.info.add.post.path.service", path, toNode.getName()));
++
++        Set<String> tags = new LinkedHashSet<>();
++        if (!link.getTags().isEmpty()) {
++            tags.addAll(link.getTags());
++        }
++        if (event != null && !event.getTags().isEmpty()) {
++            tags.addAll(event.getTags());
++        }
++
++        Operation postOp = new Operation().responses(OpenApiHelper.createSimpleResponses());
++        if (!tags.isEmpty()) {
++            postOp.tags(new ArrayList<>(tags));
++        }
++
++        PathItem pathItem = new PathItem().post(postOp);
++        if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
++            pathItem.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
++        }
++        openAPI.getPaths().addPathItem(path, pathItem);
++
++        if (event != null) {
++            Schema<?> schema = OpenApiHelper.getOrCreateSchema(openAPI, event);
++            Map<String, Object> xIncoming = new LinkedHashMap<>();
++            xIncoming.put("topics", List.of(fromNode.getName()));
++            if (!tags.isEmpty()) {
++                xIncoming.put("tags", new ArrayList<>(tags));
++            }
++            schema.addExtension("x-incoming", xIncoming);
++
++            if (fromNode.getDocumentationFileLinks() != null && !fromNode.getDocumentationFileLinks().isEmpty()) {
++                schema.addExtension("x-documentation-file-links", new ArrayList<>(fromNode.getDocumentationFileLinks()));
++            }
++
++            openAPI.getComponents().addSchemas(event.getName(), schema);
++        }
++    }
++}
+diff --git a/src/test/java/pro/axenix_innovation/axenapi/web/util/OpenAPITranslatorFromJsonToSpecTest.java b/src/test/java/pro/axenix_innovation/axenapi/web/util/OpenAPITranslatorFromJsonToSpecTest.java
+deleted file mode 100644
+index 23de7c5..0000000
+--- a/src/test/java/pro/axenix_innovation/axenapi/web/util/OpenAPITranslatorFromJsonToSpecTest.java
++++ /dev/null
+@@ -1,532 +0,0 @@
+-package pro.axenix_innovation.axenapi.web.util;
+-
+-import com.fasterxml.jackson.core.JsonProcessingException;
+-import io.swagger.v3.oas.models.OpenAPI;
+-import io.swagger.v3.oas.models.PathItem;
+-import io.swagger.v3.oas.models.media.Schema;
+-import org.junit.jupiter.api.BeforeEach;
+-import org.junit.jupiter.api.Test;
+-import org.springframework.context.MessageSource;
+-import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
+-import pro.axenix_innovation.axenapi.web.model.*;
+-import pro.axenix_innovation.axenapi.web.service.MessageHelper;
+-
+-import java.lang.reflect.Field;
+-import java.util.*;
+-
+-
+-import static org.junit.jupiter.api.Assertions.*;
+-import static org.mockito.ArgumentMatchers.any;
+-import static org.mockito.ArgumentMatchers.anyString;
+-import static org.mockito.Mockito.mock;
+-import static org.mockito.Mockito.when;
+-
+-import com.fasterxml.jackson.core.JsonProcessingException;
+-import io.swagger.v3.oas.models.OpenAPI;
+-import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
+-import pro.axenix_innovation.axenapi.web.model.LinkDTO;
+-import pro.axenix_innovation.axenapi.web.model.NodeDTO;
+-
+-import java.util.ArrayList;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.UUID;
+-
+-public class OpenAPITranslatorFromJsonToSpecTest {
+-    @BeforeEach
+-    void setUp() {
+-        MessageSource mockMessageSource = mock(MessageSource.class);
+-        when(mockMessageSource.getMessage(anyString(), any(), any(Locale.class))).thenAnswer(invocation -> invocation.getArgument(0));
+-
+-        try {
+-            Field field = MessageHelper.class.getDeclaredField("staticMessageSource");
+-            field.setAccessible(true);
+-            field.set(null, mockMessageSource);
+-        } catch (Exception e) {
+-            fail("Failed to set MessageSource in MessageHelper", e);
+-        }
+-    }
+-    // Creates OpenAPI specifications for all service nodes in the event graph
+-    @Test
+-    public void test_creates_openapi_specifications_for_service_nodes() throws JsonProcessingException {
+-        // Arrange
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode1 = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        NodeDTO serviceNode2 = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceB")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        eventGraph.addNode(serviceNode1);
+-        eventGraph.addNode(serviceNode2);
+-
+-        // Act
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        // Assert
+-        assertEquals(2, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-        assertTrue(result.containsKey("ServiceB"));
+-
+-        OpenAPI serviceASpec = result.get("ServiceA");
+-        assertEquals("ServiceA", serviceASpec.getInfo().getTitle());
+-        assertEquals("AxenAPI Specification for ServiceA", serviceASpec.getInfo().getDescription());
+-        assertEquals("1.0.0", serviceASpec.getInfo().getVersion());
+-        assertNotNull(serviceASpec.getPaths());
+-
+-        OpenAPI serviceBSpec = result.get("ServiceB");
+-        assertEquals("ServiceB", serviceBSpec.getInfo().getTitle());
+-        assertEquals("AxenAPI Specification for ServiceB", serviceBSpec.getInfo().getDescription());
+-        assertEquals("1.0.0", serviceBSpec.getInfo().getVersion());
+-        assertNotNull(serviceBSpec.getPaths());
+-    }
+-
+-    // Processes incoming links from topics to services correctly
+-    @Test
+-    public void test_processes_incoming_links_from_topics_to_services() throws JsonProcessingException {
+-        // Arrange
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceNode")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        NodeDTO topicNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicNode")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(NodeDTO.BrokerTypeEnum.KAFKA)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        NodeDTO topicRabbit = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicRabbit")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(NodeDTO.BrokerTypeEnum.RABBITMQ)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-        NodeDTO topicJMS = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicJMS")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(NodeDTO.BrokerTypeEnum.JMS)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        EventDTO event = EventDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("EventName")
+-                .schema("{\"type\":\"object\"}")
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(UUID.randomUUID(), topicNode.getId(), serviceNode.getId(), "group", event.getId(), new HashSet<>(List.of("tag1")));
+-        LinkDTO linkRabbit = new LinkDTO(UUID.randomUUID(), topicRabbit.getId(), serviceNode.getId(), null, event.getId(), new HashSet<>());
+-        LinkDTO linkJMS = new LinkDTO(UUID.randomUUID(), topicJMS.getId(), serviceNode.getId(), null, event.getId(), new HashSet<>());
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(topicNode);
+-        eventGraph.addNode(topicRabbit);
+-        eventGraph.addNode(topicJMS);
+-
+-        eventGraph.addEvent(event);
+-        eventGraph.addLink(link);
+-        eventGraph.addLink(linkRabbit);
+-        eventGraph.addLink(linkJMS);
+-
+-        // Act
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        // Assert
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceNode"));
+-
+-        OpenAPI serviceSpec = result.get("ServiceNode");
+-        assertEquals(3, serviceSpec.getPaths().size());
+-        assertNotNull(serviceSpec.getPaths().get("/kafka/group/TopicNode/EventName"));
+-        PathItem pathItem = serviceSpec.getPaths().get("/kafka/group/TopicNode/EventName");
+-        assertNotNull(pathItem.getPost());
+-        assertNotNull(pathItem.getPost().getTags());
+-        assertIterableEquals(pathItem.getPost().getTags(), Set.of("tag1"));
+-        assertNotNull(serviceSpec.getPaths().get("/rabbitmq/TopicRabbit/EventName"));
+-        assertNotNull(serviceSpec.getPaths().get("/jms/TopicJMS/EventName"));
+-        assertNotNull(serviceSpec.getComponents().getSchemas().get("EventName"));
+-    }
+-
+-    // Processes outgoing links from services to topics correctly
+-    @Test
+-    public void test_processes_outgoing_links_from_services_to_topics() throws JsonProcessingException {
+-        // Arrange
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        NodeDTO topicNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicA")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(NodeDTO.BrokerTypeEnum.KAFKA)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        EventDTO event = EventDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("EventA")
+-                .schema("{\"type\": \"object\"}")
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(UUID.randomUUID(), serviceNode.getId(), topicNode.getId(), "group1", event.getId(), Set.of("tag1", "tag2"));
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(topicNode);
+-        eventGraph.addEvent(event);
+-        eventGraph.addLink(link);
+-
+-        // Act
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        // Assert
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI serviceASpec = result.get("ServiceA");
+-        assertNotNull(serviceASpec.getComponents());
+-        assertTrue(serviceASpec.getComponents().getSchemas().containsKey("EventA"));
+-        Schema schema = serviceASpec.getComponents().getSchemas().get("EventA");
+-        assertNotNull(schema);
+-        Object o = schema.getExtensions().get("x-outgoing");
+-        assertNotNull(o);
+-        Map<String, Object> outgoingMap = (Map<String, Object>) o;
+-        Object tags = outgoingMap.get("tags");
+-        assertNotNull(tags);
+-        Object topics = outgoingMap.get("topics");
+-        assertNotNull(topics);
+-        List<String> topicsList = (List<String>) topics;
+-        assertIterableEquals(Set.of("KAFKA/TopicA"), topicsList);
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO httpNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("/test")
+-                .type(NodeDTO.TypeEnum.HTTP)
+-                .methodType(NodeDTO.MethodTypeEnum.GET)
+-                .nodeUrl("/test")
+-                .belongsToGraph(List.of(serviceNode.getId()))
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(httpNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(httpNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        assertNotNull(openAPI.getPaths().get("/test"));
+-        assertNotNull(openAPI.getPaths().get("/test").getGet());
+-        assertNull(openAPI.getPaths().get("/test").getGet().getRequestBody());
+-
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link_topic_to_service() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO topicNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicA")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(NodeDTO.BrokerTypeEnum.KAFKA)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(topicNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(topicNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        // Должен быть создан путь с null request body
+-        assertNotNull(openAPI.getPaths());
+-        assertEquals(1, openAPI.getPaths().size());
+-        assertNotNull(openAPI.getPaths().get("/kafka/default/TopicA/undefined_event"));
+-        assertNotNull(openAPI.getPaths().get("/kafka/default/TopicA/undefined_event").getPost());
+-        assertNull(openAPI.getPaths().get("/kafka/default/TopicA/undefined_event").getPost().getRequestBody());
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link_jms_topic_to_service() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO topicNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicA")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(NodeDTO.BrokerTypeEnum.JMS)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(topicNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(topicNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        assertNotNull(openAPI.getPaths());
+-        assertEquals(1, openAPI.getPaths().size());
+-        assertNotNull(openAPI.getPaths().get("/jms/TopicA/undefined_event"));
+-        assertNotNull(openAPI.getPaths().get("/jms/TopicA/undefined_event").getPost());
+-        assertNull(openAPI.getPaths().get("/jms/TopicA/undefined_event").getPost().getRequestBody());
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link_rabbitmq_topic_to_service() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO topicNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicA")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(NodeDTO.BrokerTypeEnum.RABBITMQ)
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(topicNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(topicNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        assertNotNull(openAPI.getPaths());
+-        assertEquals(1, openAPI.getPaths().size());
+-        assertNotNull(openAPI.getPaths().get("/rabbitmq/TopicA/undefined_event"));
+-        assertNotNull(openAPI.getPaths().get("/rabbitmq/TopicA/undefined_event").getPost());
+-        assertNull(openAPI.getPaths().get("/rabbitmq/TopicA/undefined_event").getPost().getRequestBody());
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link_undefined_broker_topic_to_service() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO topicNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("TopicA")
+-                .type(NodeDTO.TypeEnum.TOPIC)
+-                .brokerType(null) // undefined broker
+-                .belongsToGraph(new ArrayList<>())
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(topicNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(topicNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        assertNotNull(openAPI.getPaths());
+-        assertEquals(1, openAPI.getPaths().size());
+-        assertNotNull(openAPI.getPaths().get("/undefined_broker/TopicA/undefined_event"));
+-        assertNotNull(openAPI.getPaths().get("/undefined_broker/TopicA/undefined_event").getPost());
+-        assertNull(openAPI.getPaths().get("/undefined_broker/TopicA/undefined_event").getPost().getRequestBody());
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link_http_post() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO httpNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("/test")
+-                .type(NodeDTO.TypeEnum.HTTP)
+-                .methodType(NodeDTO.MethodTypeEnum.POST)
+-                .nodeUrl("/test")
+-                .belongsToGraph(List.of(serviceNode.getId()))
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(httpNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(httpNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        assertNotNull(openAPI.getPaths().get("/test"));
+-        assertNotNull(openAPI.getPaths().get("/test").getPost());
+-        assertNull(openAPI.getPaths().get("/test").getPost().getRequestBody());
+-        assertNull(openAPI.getPaths().get("/test").getGet());
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link_http_put() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO httpNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("/test")
+-                .type(NodeDTO.TypeEnum.HTTP)
+-                .methodType(NodeDTO.MethodTypeEnum.PUT)
+-                .nodeUrl("/test")
+-                .belongsToGraph(List.of(serviceNode.getId()))
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(httpNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(httpNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        assertNotNull(openAPI.getPaths().get("/test"));
+-        assertNotNull(openAPI.getPaths().get("/test").getPut());
+-        assertNull(openAPI.getPaths().get("/test").getPut().getRequestBody());
+-        assertNull(openAPI.getPaths().get("/test").getGet());
+-    }
+-
+-    @Test
+-    public void test_creates_spec_from_graph_with_empty_event_link_http_delete() throws JsonProcessingException {
+-        EventGraphDTO eventGraphDTO = new EventGraphDTO();
+-        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
+-
+-        NodeDTO serviceNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("ServiceA")
+-                .type(NodeDTO.TypeEnum.SERVICE)
+-                .belongsToGraph(new ArrayList<>()).build();
+-
+-        NodeDTO httpNode = NodeDTO.builder()
+-                .id(UUID.randomUUID())
+-                .name("/test")
+-                .type(NodeDTO.TypeEnum.HTTP)
+-                .methodType(NodeDTO.MethodTypeEnum.DELETE)
+-                .nodeUrl("/test")
+-                .belongsToGraph(List.of(serviceNode.getId()))
+-                .build();
+-
+-        LinkDTO link = new LinkDTO(httpNode.getId(), serviceNode.getId(), null);
+-
+-        eventGraph.addNode(serviceNode);
+-        eventGraph.addNode(httpNode);
+-        eventGraph.addLink(link);
+-
+-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+-
+-        assertEquals(1, result.size());
+-        assertTrue(result.containsKey("ServiceA"));
+-
+-        OpenAPI openAPI = result.get("ServiceA");
+-        assertNotNull(openAPI.getPaths().get("/test"));
+-        assertNotNull(openAPI.getPaths().get("/test").getDelete());
+-        assertNull(openAPI.getPaths().get("/test").getDelete().getRequestBody());
+-        assertNull(openAPI.getPaths().get("/test").getGet());
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/HttpToServiceLinkProcessorTest.java b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/HttpToServiceLinkProcessorTest.java
+new file mode 100644
+index 0000000..1426516
+--- /dev/null
++++ b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/HttpToServiceLinkProcessorTest.java
+@@ -0,0 +1,88 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import io.swagger.v3.oas.models.PathItem;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.springframework.context.MessageSource;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.lang.reflect.Field;
++import java.util.*;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class HttpToServiceLinkProcessorTest {
++    private HttpToServiceLinkProcessor httpToServiceLinkProcessor;
++    private Map<String, OpenAPI> openApiMap;
++    private NodeDTO toNode;
++    private NodeDTO fromNode;
++    private EventDTO event;
++    private LinkDTO link;
++
++    @BeforeEach
++    void setUp() {
++        httpToServiceLinkProcessor = new HttpToServiceLinkProcessor();
++        openApiMap = new HashMap<>();
++        toNode = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("ServiceA")
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .build();
++        fromNode = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("HttpA")
++                .type(NodeDTO.TypeEnum.HTTP)
++                .nodeUrl("/test")
++                .methodType(NodeDTO.MethodTypeEnum.GET)
++                .build();
++        event = EventDTO.builder()
++                .id(UUID.randomUUID())
++                .name("EventA")
++                .schema("{\"type\":\"object\"}")
++                .build();
++        link = new LinkDTO(UUID.randomUUID(), fromNode.getId(), toNode.getId(), null, event.getId(), new HashSet<>(List.of("tag1")));
++
++        OpenAPI openAPI = new OpenAPI();
++        openAPI.setInfo(new io.swagger.v3.oas.models.info.Info().title("ServiceA"));
++        openApiMap.put("ServiceA", openAPI);
++
++        MessageSource mockMessageSource = mock(MessageSource.class);
++        when(mockMessageSource.getMessage(anyString(), any(), any(Locale.class))).thenAnswer(invocation -> invocation.getArgument(0));
++
++        try {
++            Field field = MessageHelper.class.getDeclaredField("staticMessageSource");
++            field.setAccessible(true);
++            field.set(null, mockMessageSource);
++        } catch (Exception e) {
++            fail("Failed to set MessageSource in MessageHelper", e);
++        }
++    }
++
++    @Test
++    void testProcess() throws JsonProcessingException {
++        // Act
++        httpToServiceLinkProcessor.process(openApiMap, link, toNode, fromNode, event);
++
++        // Assert
++        OpenAPI openAPI = openApiMap.get("ServiceA");
++        assertNotNull(openAPI);
++
++        PathItem pathItem = openAPI.getPaths().get("/test");
++        assertNotNull(pathItem);
++        assertNotNull(pathItem.getGet());
++        assertEquals(1, pathItem.getGet().getTags().size());
++        assertTrue(pathItem.getGet().getTags().contains("tag1"));
++        assertTrue(pathItem.getGet().getTags().contains("HTTP"));
++
++        assertNotNull(openAPI.getComponents().getSchemas().get("EventA"));
++    }
++}
+diff --git a/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiGeneratorFacadeTest.java b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiGeneratorFacadeTest.java
+new file mode 100644
+index 0000000..f995f9c
+--- /dev/null
++++ b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/OpenApiGeneratorFacadeTest.java
+@@ -0,0 +1,93 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.springframework.context.MessageSource;
++import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
++import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.lang.reflect.Field;
++import java.util.ArrayList;
++import java.util.Locale;
++import java.util.Map;
++import java.util.UUID;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class OpenApiGeneratorFacadeTest {
++    private EventGraphFacade eventGraph;
++    private NodeDTO serviceNode1;
++    private NodeDTO serviceNode2;
++
++    @BeforeEach
++    void setUp() {
++        EventGraphDTO eventGraphDTO = new EventGraphDTO();
++        eventGraph = new EventGraphFacade(eventGraphDTO);
++
++        serviceNode1 = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("ServiceA")
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .belongsToGraph(new ArrayList<>())
++                .build();
++
++        serviceNode2 = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("ServiceB")
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .belongsToGraph(new ArrayList<>())
++                .build();
++
++        eventGraph.addNode(serviceNode1);
++        eventGraph.addNode(serviceNode2);
++
++        MessageSource mockMessageSource = mock(MessageSource.class);
++        when(mockMessageSource.getMessage(anyString(), any(), any(Locale.class))).thenAnswer(invocation -> invocation.getArgument(0));
++
++        try {
++            Field field = MessageHelper.class.getDeclaredField("staticMessageSource");
++            field.setAccessible(true);
++            field.set(null, mockMessageSource);
++        } catch (Exception e) {
++            fail("Failed to set MessageSource in MessageHelper", e);
++        }
++    }
++
++    @Test
++    void testGetOpenAPISpecifications() throws JsonProcessingException {
++        // Act
++        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
++
++        // Assert
++        assertEquals(2, result.size());
++        assertTrue(result.containsKey("ServiceA"));
++        assertTrue(result.containsKey("ServiceB"));
++    }
++
++    @Test
++    void testGetOpenAPISpecByServiceId() throws JsonProcessingException {
++        // Act
++        OpenAPI result = OpenApiGeneratorFacade.getOpenAPISpecByServiceId(eventGraph, serviceNode1.getId());
++
++        // Assert
++        assertNotNull(result);
++        assertEquals("ServiceA", result.getInfo().getTitle());
++    }
++
++    @Test
++    void testGetOpenAPISpecByServiceId_NotFound() throws JsonProcessingException {
++        // Act
++        OpenAPI result = OpenApiGeneratorFacade.getOpenAPISpecByServiceId(eventGraph, UUID.randomUUID());
++
++        // Assert
++        assertNull(result);
++    }
++}
+diff --git a/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceOpenApiGeneratorTest.java b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceOpenApiGeneratorTest.java
+new file mode 100644
+index 0000000..4809ff1
+--- /dev/null
++++ b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceOpenApiGeneratorTest.java
+@@ -0,0 +1,94 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import io.swagger.v3.oas.models.OpenAPI;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.springframework.context.MessageSource;
++import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
++import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.lang.reflect.Field;
++import java.util.ArrayList;
++import java.util.Locale;
++import java.util.Map;
++import java.util.UUID;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class ServiceOpenApiGeneratorTest {
++    private ServiceOpenApiGenerator serviceOpenApiGenerator;
++
++    @BeforeEach
++    void setUp() {
++        serviceOpenApiGenerator = new ServiceOpenApiGenerator();
++        MessageSource mockMessageSource = mock(MessageSource.class);
++        when(mockMessageSource.getMessage(anyString(), any(), any(Locale.class))).thenAnswer(invocation -> invocation.getArgument(0));
++
++        try {
++            Field field = MessageHelper.class.getDeclaredField("staticMessageSource");
++            field.setAccessible(true);
++            field.set(null, mockMessageSource);
++        } catch (Exception e) {
++            fail("Failed to set MessageSource in MessageHelper", e);
++        }
++    }
++
++    @Test
++    void testCreateOpenAPIMap() {
++        // Arrange
++        EventGraphDTO eventGraphDTO = new EventGraphDTO();
++        EventGraphFacade eventGraph = new EventGraphFacade(eventGraphDTO);
++
++        NodeDTO serviceNode1 = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("ServiceA")
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .belongsToGraph(new ArrayList<>())
++                .build();
++
++        NodeDTO serviceNode2 = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("ServiceB")
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .belongsToGraph(new ArrayList<>())
++                .build();
++
++        NodeDTO topicNode = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("TopicA")
++                .type(NodeDTO.TypeEnum.TOPIC)
++                .belongsToGraph(new ArrayList<>())
++                .build();
++
++        eventGraph.addNode(serviceNode1);
++        eventGraph.addNode(serviceNode2);
++        eventGraph.addNode(topicNode);
++
++        // Act
++        Map<String, OpenAPI> result = serviceOpenApiGenerator.createOpenAPIMap(eventGraph);
++
++        // Assert
++        assertEquals(2, result.size());
++        assertTrue(result.containsKey("ServiceA"));
++        assertTrue(result.containsKey("ServiceB"));
++        assertFalse(result.containsKey("TopicA"));
++
++        OpenAPI serviceASpec = result.get("ServiceA");
++        assertEquals("ServiceA", serviceASpec.getInfo().getTitle());
++        assertEquals("AxenAPI Specification for ServiceA", serviceASpec.getInfo().getDescription());
++        assertEquals("1.0.0", serviceASpec.getInfo().getVersion());
++        assertNotNull(serviceASpec.getPaths());
++
++        OpenAPI serviceBSpec = result.get("ServiceB");
++        assertEquals("ServiceB", serviceBSpec.getInfo().getTitle());
++        assertEquals("AxenAPI Specification for ServiceB", serviceBSpec.getInfo().getDescription());
++        assertEquals("1.0.0", serviceBSpec.getInfo().getVersion());
++        assertNotNull(serviceBSpec.getPaths());
++    }
++}
+diff --git a/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceToTopicLinkProcessorTest.java b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceToTopicLinkProcessorTest.java
+new file mode 100644
+index 0000000..f386653
+--- /dev/null
++++ b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/ServiceToTopicLinkProcessorTest.java
+@@ -0,0 +1,82 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.springframework.context.MessageSource;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.lang.reflect.Field;
++import java.util.*;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class ServiceToTopicLinkProcessorTest {
++    private ServiceToTopicLinkProcessor serviceToTopicLinkProcessor;
++    private Map<String, OpenAPI> openApiMap;
++    private NodeDTO fromNode;
++    private NodeDTO toNode;
++    private EventDTO event;
++    private LinkDTO link;
++
++    @BeforeEach
++    void setUp() {
++        serviceToTopicLinkProcessor = new ServiceToTopicLinkProcessor();
++        openApiMap = new HashMap<>();
++        fromNode = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("ServiceA")
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .build();
++        toNode = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("TopicA")
++                .type(NodeDTO.TypeEnum.TOPIC)
++                .brokerType(NodeDTO.BrokerTypeEnum.KAFKA)
++                .build();
++        event = EventDTO.builder()
++                .id(UUID.randomUUID())
++                .name("EventA")
++                .schema("{\"type\":\"object\"}")
++                .build();
++        link = new LinkDTO(UUID.randomUUID(), fromNode.getId(), toNode.getId(), "groupA", event.getId(), new HashSet<>(List.of("tag1")));
++
++        OpenAPI openAPI = new OpenAPI();
++        openAPI.setInfo(new io.swagger.v3.oas.models.info.Info().title("ServiceA"));
++        openApiMap.put("ServiceA", openAPI);
++
++        MessageSource mockMessageSource = mock(MessageSource.class);
++        when(mockMessageSource.getMessage(anyString(), any(), any(Locale.class))).thenAnswer(invocation -> invocation.getArgument(0));
++
++        try {
++            Field field = MessageHelper.class.getDeclaredField("staticMessageSource");
++            field.setAccessible(true);
++            field.set(null, mockMessageSource);
++        } catch (Exception e) {
++            fail("Failed to set MessageSource in MessageHelper", e);
++        }
++    }
++
++    @Test
++    void testProcess() throws JsonProcessingException {
++        // Act
++        serviceToTopicLinkProcessor.process(openApiMap, link, fromNode, toNode, event);
++
++        // Assert
++        OpenAPI openAPI = openApiMap.get("ServiceA");
++        assertNotNull(openAPI);
++
++        assertNotNull(openAPI.getComponents().getSchemas().get("EventA"));
++        Map<String, Object> extensions = openAPI.getComponents().getSchemas().get("EventA").getExtensions();
++        assertNotNull(extensions);
++        assertTrue(extensions.containsKey("x-outgoing"));
++    }
++}
+diff --git a/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/TopicToServiceLinkProcessorTest.java b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/TopicToServiceLinkProcessorTest.java
+new file mode 100644
+index 0000000..f0e8efb
+--- /dev/null
++++ b/src/test/java/pro/axenix_innovation/axenapi/web/util/openapi/generator/TopicToServiceLinkProcessorTest.java
+@@ -0,0 +1,86 @@
++package pro.axenix_innovation.axenapi.web.util.openapi.generator;
++
++import com.fasterxml.jackson.core.JsonProcessingException;
++import io.swagger.v3.oas.models.OpenAPI;
++import io.swagger.v3.oas.models.PathItem;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++import org.springframework.context.MessageSource;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++import pro.axenix_innovation.axenapi.web.service.MessageHelper;
++
++import java.lang.reflect.Field;
++import java.util.*;
++
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.anyString;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++public class TopicToServiceLinkProcessorTest {
++    private TopicToServiceLinkProcessor topicToServiceLinkProcessor;
++    private Map<String, OpenAPI> openApiMap;
++    private NodeDTO toNode;
++    private NodeDTO fromNode;
++    private EventDTO event;
++    private LinkDTO link;
++
++    @BeforeEach
++    void setUp() {
++        topicToServiceLinkProcessor = new TopicToServiceLinkProcessor();
++        openApiMap = new HashMap<>();
++        toNode = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("ServiceA")
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .build();
++        fromNode = NodeDTO.builder()
++                .id(UUID.randomUUID())
++                .name("TopicA")
++                .type(NodeDTO.TypeEnum.TOPIC)
++                .brokerType(NodeDTO.BrokerTypeEnum.KAFKA)
++                .build();
++        event = EventDTO.builder()
++                .id(UUID.randomUUID())
++                .name("EventA")
++                .schema("{\"type\":\"object\"}")
++                .build();
++        link = new LinkDTO(UUID.randomUUID(), fromNode.getId(), toNode.getId(), "groupA", event.getId(), new HashSet<>(List.of("tag1")));
++
++        OpenAPI openAPI = new OpenAPI();
++        openAPI.setInfo(new io.swagger.v3.oas.models.info.Info().title("ServiceA"));
++        openApiMap.put("ServiceA", openAPI);
++
++        MessageSource mockMessageSource = mock(MessageSource.class);
++        when(mockMessageSource.getMessage(anyString(), any(), any(Locale.class))).thenAnswer(invocation -> invocation.getArgument(0));
++
++        try {
++            Field field = MessageHelper.class.getDeclaredField("staticMessageSource");
++            field.setAccessible(true);
++            field.set(null, mockMessageSource);
++        } catch (Exception e) {
++            fail("Failed to set MessageSource in MessageHelper", e);
++        }
++    }
++
++    @Test
++    void testProcess() throws JsonProcessingException {
++        // Act
++        topicToServiceLinkProcessor.process(openApiMap, link, toNode, fromNode, event);
++
++        // Assert
++        OpenAPI openAPI = openApiMap.get("ServiceA");
++        assertNotNull(openAPI);
++
++        PathItem pathItem = openAPI.getPaths().get("/kafka/groupA/TopicA/EventA");
++        assertNotNull(pathItem);
++        assertNotNull(pathItem.getPost());
++        assertEquals(1, pathItem.getPost().getTags().size());
++        assertEquals("tag1", pathItem.getPost().getTags().get(0));
++
++        assertNotNull(openAPI.getComponents().getSchemas().get("EventA"));
++    }
++}
