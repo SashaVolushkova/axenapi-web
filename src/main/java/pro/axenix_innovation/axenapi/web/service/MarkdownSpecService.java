@@ -11,10 +11,11 @@ import org.openapitools.codegen.languages.MarkdownDocumentationCodegen;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pro.axenix_innovation.axenapi.web.generate.SpecificationMarkdownHandler;
+import pro.axenix_innovation.axenapi.web.generate.SpecificationMarkdownHandler;
 import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
 import pro.axenix_innovation.axenapi.web.model.*;
 import pro.axenix_innovation.axenapi.web.repository.MarkdownSpecificationRepository;
-import pro.axenix_innovation.axenapi.web.util.OpenAPIGenerator;
+import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,7 +87,7 @@ public class MarkdownSpecService {
 
         log.info(messageHelper.getMessage("axenapi.info.start.spec.gen.graph", graphDTO.getName()));
 
-        Map<String, OpenAPI> openAPISpecifications = OpenAPIGenerator.getOpenAPISpecifications(new EventGraphFacade(graphDTO));
+        Map<String, OpenAPI> openAPISpecifications = OpenApiGeneratorFacade.getOpenAPISpecifications(new EventGraphFacade(graphDTO));
 
         if (openAPISpecifications == null || openAPISpecifications.isEmpty()) {
             log.error(messageHelper.getMessage(ERROR_NO_YAML_CONTENT));

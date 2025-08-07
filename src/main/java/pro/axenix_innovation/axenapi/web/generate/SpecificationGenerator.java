@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
 import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
-import pro.axenix_innovation.axenapi.web.util.OpenAPIGenerator;
+import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class SpecificationGenerator {
 
         try {
             EventGraphFacade facade = new EventGraphFacade(eventGraph);
-            Map<String, OpenAPI> openAPIMap = OpenAPIGenerator.getOpenAPISpecifications(facade);
+            Map<String, OpenAPI> openAPIMap = OpenApiGeneratorFacade.getOpenAPISpecifications(facade);
 
             if (openAPIMap == null || openAPIMap.isEmpty()) {
                 return Map.of("error", "Translator returned empty OpenAPI specification");
