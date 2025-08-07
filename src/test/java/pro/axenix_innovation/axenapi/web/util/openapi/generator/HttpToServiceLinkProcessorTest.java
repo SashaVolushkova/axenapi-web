@@ -3,6 +3,7 @@ package pro.axenix_innovation.axenapi.web.util.openapi.generator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.MessageSource;
@@ -53,6 +54,7 @@ public class HttpToServiceLinkProcessorTest {
 
         OpenAPI openAPI = new OpenAPI();
         openAPI.setInfo(new io.swagger.v3.oas.models.info.Info().title("ServiceA"));
+        openAPI.setPaths(new Paths());
         openApiMap.put("ServiceA", openAPI);
 
         MessageSource mockMessageSource = mock(MessageSource.class);
@@ -79,7 +81,7 @@ public class HttpToServiceLinkProcessorTest {
         PathItem pathItem = openAPI.getPaths().get("/test");
         assertNotNull(pathItem);
         assertNotNull(pathItem.getGet());
-        assertEquals(1, pathItem.getGet().getTags().size());
+        assertEquals(2, pathItem.getGet().getTags().size());
         assertTrue(pathItem.getGet().getTags().contains("tag1"));
         assertTrue(pathItem.getGet().getTags().contains("HTTP"));
 

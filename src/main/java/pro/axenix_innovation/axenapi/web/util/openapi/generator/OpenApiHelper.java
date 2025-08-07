@@ -30,6 +30,9 @@ public class OpenApiHelper {
         if (openAPI.getComponents() == null) {
             openAPI.setComponents(new Components());
         }
+        if (openAPI.getComponents().getSchemas() == null) {
+            openAPI.getComponents().setSchemas(new HashMap<>());
+        }
     }
 
     public static Schema<?> getOrCreateSchema(OpenAPI openAPI, EventDTO event) throws JsonProcessingException {
