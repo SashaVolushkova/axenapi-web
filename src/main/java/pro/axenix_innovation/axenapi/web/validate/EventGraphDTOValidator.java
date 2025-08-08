@@ -235,8 +235,9 @@ public class EventGraphDTOValidator {
 
         List<String> invalidLinkIds = eventGraph.getLinks().stream()
                 .filter(link -> {
+                    //id event может быть пустым - в этом случае не нужны все остальные проверки
                     if (link.getEventId() == null) {
-                        return true;
+                        return false;
                     }
                     String eventIdStr = link.getEventId().toString();
                     if (eventIdStr.isBlank()) {

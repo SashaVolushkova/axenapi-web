@@ -19,11 +19,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.multipart.MultipartFile;
 import pro.axenix_innovation.axenapi.web.entity.AppCodeMessage;
+import pro.axenix_innovation.axenapi.web.exception.AxenApiException;
 import pro.axenix_innovation.axenapi.web.exception.NotServiceNode;
 import pro.axenix_innovation.axenapi.web.exception.OpenAPISpecParseException;
 import pro.axenix_innovation.axenapi.web.generate.DocxSpecificationDbHandler;
 import pro.axenix_innovation.axenapi.web.generate.PdfSpecificationDbHandler;
 import pro.axenix_innovation.axenapi.web.generate.SpecificationGenerator;
+import pro.axenix_innovation.axenapi.web.mapper.GitRepoMapper;
 import pro.axenix_innovation.axenapi.web.model.*;
 import pro.axenix_innovation.axenapi.web.repository.DocxSpecificationRepository;
 import pro.axenix_innovation.axenapi.web.repository.MarkdownSpecificationRepository;
@@ -63,6 +65,8 @@ public class AxenAPIController implements DefaultApi {
     private final MessageHelper messageHelper;
     private final AllServicePdfGenerationService allServicePdfGenerationService;
     private final GitServiceCommand gitServiceCommand;
+    private final GitRepoMapper gitRepoMapper;
+    private final GitRepositoryService gitRepositoryService;
 
 
     private static final Logger log = LoggerFactory.getLogger(AxenAPIController.class);
@@ -289,6 +293,91 @@ public class AxenAPIController implements DefaultApi {
                     .body(BaseResponse.builder()
                             .message(e.getMessage())
                             .build());
+        }
+    }
+
+    @Override
+    public ResponseEntity<List<GitRepoDto>> gitGet() {
+        List<GitRepoDto> dtos = gitRepositoryService.getList()
+                .stream()
+                .map(gitRepoMapper::toGitRepoDto)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @Override
+    public ResponseEntity gitIdDelete(String id) {
+        try {
+            gitRepositoryService.delete(id);
+            return ResponseEntity.ok().build();
+        } catch (AxenApiException.NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    BaseResponse.builder()
+                            .code(WARN_GIT_REPOSITORY_NOT_FOUND.getCode())
+                            .message(messageHelper.getMessage(RESP_UNEXPECTED_ERROR.getMessageKey(), e.getMessage()))
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity gitIdGet(String id) {
+        try {
+            return ResponseEntity.ok(
+                    gitRepoMapper.toGitRepoDto(
+                            gitRepositoryService.getById(id)
+                    )
+            );
+        } catch (AxenApiException.NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    BaseResponse.builder()
+                            .code(WARN_GIT_REPOSITORY_NOT_FOUND.getCode())
+                            .message(messageHelper.getMessage(RESP_UNEXPECTED_ERROR.getMessageKey(), e.getMessage()))
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity gitIdPut(String id, GitRepoDto gitRepoDto) {
+        try {
+            return ResponseEntity.ok(
+                    gitRepoMapper.toGitRepoDto(
+                            gitRepositoryService.put(id, gitRepoDto)
+                    )
+            );
+        } catch (AxenApiException.NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    BaseResponse.builder()
+                            .code(WARN_GIT_REPOSITORY_NOT_FOUND.getCode())
+                            .message(messageHelper.getMessage(RESP_UNEXPECTED_ERROR.getMessageKey(), e.getMessage()))
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    BaseResponse.builder()
+                            .code(RESP_UNEXPECTED_ERROR.getCode())
+                            .message(messageHelper.getMessage(RESP_UNEXPECTED_ERROR.getMessageKey(), e.getMessage()))
+                            .build()
+            );
+        }
+    }
+
+    @Override
+    public ResponseEntity gitPost(@Valid @RequestBody GitRepoDto gitRepoDto) {
+        try {
+            return ResponseEntity.ok(
+                    gitRepoMapper.toGitRepoDto(
+                            gitRepositoryService.create(gitRepoDto)
+                    )
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    BaseResponse.builder()
+                            .code(RESP_UNEXPECTED_ERROR.getCode())
+                            .message(messageHelper.getMessage(RESP_UNEXPECTED_ERROR.getMessageKey(), e.getMessage()))
+                            .build()
+            );
         }
     }
 

@@ -15,111 +15,199 @@
   "nodes": [
     {
       "id": "78b5576b-b548-4734-9d95-025a22965321",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "rabbitService2",
       "type": "TOPIC",
       "brokerType": "RABBITMQ",
-      "tags": ["commonOutgoingTag","rabbitService2"]
+      "tags": ["commonOutgoingTag","rabbitService2"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "9cd5abde-6500-4811-ab74-e759d545a689",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "kafkaService2",
       "type": "TOPIC",
-      "brokerType": "KAFKA"
+      "brokerType": "KAFKA",
+      "tags": [],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "996cb100-7ad2-4c22-9206-df13b2afa752",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "commonConsumeKafka",
       "type": "TOPIC",
       "brokerType": "KAFKA",
-      "tags": ["tagKafkaConsume1", "commonTag", "tagKafkaConsume2"]
+      "tags": ["tagKafkaConsume1", "commonTag", "tagKafkaConsume2"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "12345678-90ab-cdef-1234-567890abcdef",
+      "nodeDescription": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
       "name": "service_no_common_consume_topics_common_events_common_outgoing_topics_1",
       "type": "SERVICE",
       "brokerType": null,
-      "tags": ["topicConsumeJMS_1", "commonOutgoingTag","service1", "tagKafkaConsume1", "commonTag", "topicConsumeKafka_1"]
+      "tags": ["topicConsumeJMS_1", "commonOutgoingTag","service1", "tagKafkaConsume1", "commonTag", "topicConsumeKafka_1"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "nodeDescription": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
+      "nodeUrl": null,
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "service_no_common_consume_topics_common_events_common_outgoing_topics_2",
       "type": "SERVICE",
       "brokerType": null,
-      "tags": ["tagKafkaConsume2", "commonTag", "topicConsumeKafka_2", "topicConsumeJMS_2", "commonOutgoingTag","service2", "rabbitService2"]
+      "tags": ["tagKafkaConsume2", "commonTag", "topicConsumeKafka_2", "topicConsumeJMS_2", "commonOutgoingTag","service2", "rabbitService2"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef03",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
       "name": "topicConsumeKafka_1",
       "type": "TOPIC",
       "brokerType": "KAFKA",
-      "tags": ["topicConsumeKafka_1"]
+      "tags": ["topicConsumeKafka_1"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef04",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "topicConsumeKafka_2",
       "type": "TOPIC",
       "brokerType": "KAFKA",
-      "tags": ["topicConsumeKafka_2"]
+      "tags": ["topicConsumeKafka_2"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef05",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
       "name": "topicConsumeRabbitMQ_1",
       "type": "TOPIC",
-      "brokerType": "RABBITMQ"
+      "brokerType": "RABBITMQ",
+      "tags": [],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef06",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "topicConsumeRabbitMQ_2",
       "type": "TOPIC",
-      "brokerType": "RABBITMQ"
+      "brokerType": "RABBITMQ",
+      "tags": [],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef07",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
       "name": "topicConsumeJMS_1",
       "type": "TOPIC",
       "brokerType": "JMS",
-      "tags": ["topicConsumeJMS_1"]
+      "tags": ["topicConsumeJMS_1"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef08",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "topicConsumeJMS_2",
       "type": "TOPIC",
       "brokerType": "JMS",
-      "tags": ["topicConsumeJMS_2"]
+      "tags": ["topicConsumeJMS_2"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef09",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "topicOutKafka",
       "type": "TOPIC",
       "brokerType": "KAFKA",
-      "tags": ["commonOutgoingTag","service2"]
+      "tags": ["commonOutgoingTag","service2"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef10",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "topicOutRabbitMQ",
       "type": "TOPIC",
       "brokerType": "RABBITMQ",
-      "tags": ["commonOutgoingTag","service2", "service1"]
+      "tags": ["commonOutgoingTag","service2", "service1"],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "b2c3d4e5-f678-9012-3456-7890abcdef11",
+      "nodeDescription": null,
+      "nodeUrl": null,
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef", "a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "topicOutJMS",
       "type": "TOPIC",
-      "brokerType": "JMS"
+      "brokerType": "JMS",
+      "tags": [],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     }
   ],
   "links": [
@@ -239,41 +327,64 @@
       "id": "14b0488c-7e8d-4283-9e50-66ba7a2e114d",
       "name": "EventCommonConsumeKafka",
       "tags": ["tagKafkaConsume1", "commonTag", "tagKafkaConsume2"],
-      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\"commonConsumeKafka\"]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\"commonConsumeKafka\"]\n        }\n      }",
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "c3d4e5f6-7890-1234-5678-90abcdef012a",
       "name": "EventOutgoingKafka",
       "tags": ["commonOutgoingTag","service2"],
-      "schema": " {\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            {\n              \"name\": \"kafka/topicOutKafka\",\n              \"tags\": [\"commonOutgoingTag\",\"service2\"]\n            }\n          ]\n        }\n      }"
+      "schema": " {\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            {\n              \"name\": \"kafka/topicOutKafka\",\n              \"tags\": [\"commonOutgoingTag\",\"service2\"]\n            }\n          ]\n        }\n      }",
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "bdc6803e-5395-45f2-aece-c359de3d3f0b",
       "name": "EventOutgoingRabbitMQ",
       "tags": ["service1","service2", "rabbitService2", "commonOutgoingTag"],
-      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            {\n              \"name\": \"rabbitmq/topicOutRabbitMQ\",\n              \"tags\": [\"commonOutgoingTag\",\"service2\"]\n            },\n            {\n              \"name\": \"rabbitmq/rabbitService2\",\n              \"tags\": [\"commonOutgoingTag\",\"rabbitService2\"]\n            }\n          ]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            {\n              \"name\": \"rabbitmq/topicOutRabbitMQ\",\n              \"tags\": [\"commonOutgoingTag\",\"service2\"]\n            },\n            {\n              \"name\": \"rabbitmq/rabbitService2\",\n              \"tags\": [\"commonOutgoingTag\",\"rabbitService2\"]\n            }\n          ]\n        }\n      }",
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde1",
       "name": "EventOutgoingJMS",
-      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            \"jms/topicOutJMS\", \"kafka/kafkaService2\"\n          ]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            \"jms/topicOutJMS\", \"kafka/kafkaService2\"\n          ]\n        }\n      }",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde2",
       "name": "EventConsumeKafka",
       "tags": ["topicConsumeKafka_1", "topicConsumeKafka_2"],
-      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"kafka/topicConsumeKafka_2\"]}}"
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"kafka/topicConsumeKafka_2\"]}}",
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde3",
       "name": "EventConsumeRabbitMQ",
-      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"rabbitmq/topicConsumeRabbitMQ_2\"]}}"
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"rabbitmq/topicConsumeRabbitMQ_2\"]}}",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde4",
       "name": "EventConsumeJMS",
       "tags": ["topicConsumeJMS_1","topicConsumeJMS_2"],
-      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"jms/topicConsumeJMS_2\"]}}"
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"jms/topicConsumeJMS_2\"]}}",
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["ASYNC_MESSAGING"]
     }
   ],
   "errors": []

@@ -112,6 +112,11 @@ public record EventGraphFacade(EventGraphDTO eventGraph) {
                     .documentationFileLinks(node.getDocumentationFileLinks() != null
                             ? new HashSet<>(node.getDocumentationFileLinks())
                             : null)
+                    .httpParameters(node.getHttpParameters())
+                    .httpRequestBody(node.getHttpRequestBody())
+                    .httpResponses(node.getHttpResponses() != null
+                            ? new ArrayList<>(node.getHttpResponses())
+                            : null)
                     .build());
         });
 
@@ -128,6 +133,18 @@ public record EventGraphFacade(EventGraphDTO eventGraph) {
                 log.debug("Found existing node: {}", existingNode.getName());
                 existingNode.getBelongsToGraph().addAll(n.getBelongsToGraph());
                 existingNode.getTags().addAll(n.getTags());
+                
+                // Merge HTTP fields if they exist in the new node but not in existing
+                if (existingNode.getHttpParameters() == null && n.getHttpParameters() != null) {
+                    existingNode.setHttpParameters(n.getHttpParameters());
+                }
+                if (existingNode.getHttpRequestBody() == null && n.getHttpRequestBody() != null) {
+                    existingNode.setHttpRequestBody(n.getHttpRequestBody());
+                }
+                if ((existingNode.getHttpResponses() == null || existingNode.getHttpResponses().isEmpty()) 
+                    && n.getHttpResponses() != null && !n.getHttpResponses().isEmpty()) {
+                    existingNode.setHttpResponses(new ArrayList<>(n.getHttpResponses()));
+                }
             } else {
                 log.debug("No existing node found, adding new node: {}", n.getName());
                 merged.addNodesItem(NodeDTO.builder()
@@ -144,6 +161,11 @@ public record EventGraphFacade(EventGraphDTO eventGraph) {
                         .documentationFileLinks(n.getDocumentationFileLinks() != null
                                 ? new HashSet<>(n.getDocumentationFileLinks())
                                 : null)
+                        .httpParameters(n.getHttpParameters())
+                        .httpRequestBody(n.getHttpRequestBody())
+                        .httpResponses(n.getHttpResponses() != null
+                                ? new ArrayList<>(n.getHttpResponses())
+                                : null)
                         .build());
             }
         });
@@ -157,12 +179,27 @@ public record EventGraphFacade(EventGraphDTO eventGraph) {
             if (eventDTOMerged != null) {
                 log.debug("Event with name {} already exists in merged graph.", event.getName());
                 eventDTOMerged.getTags().addAll(event.getTags());
+                // Обновляем описание, если оно отсутствует в существующем событии
+                if (eventDTOMerged.getEventDescription() == null && event.getEventDescription() != null) {
+                    eventDTOMerged.setEventDescription(event.getEventDescription());
+                }
+                // Обновляем тип события, если он отсутствует
+                if (eventDTOMerged.getEventType() == null && event.getEventType() != null) {
+                    eventDTOMerged.setEventType(event.getEventType());
+                }
+                // Обновляем контекст использования
+                if (eventDTOMerged.getUsageContext() == null && event.getUsageContext() != null) {
+                    eventDTOMerged.setUsageContext(new HashSet<>(event.getUsageContext()));
+                }
                 log.debug("Merged event tags: {}", eventDTOMerged.getTags());
             } else {
                 merged.addEventsItem(EventDTO.builder()
                         .id(event.getId())
                         .name(event.getName())
                         .schema(event.getSchema())
+                        .eventDescription(event.getEventDescription())
+                        .eventType(event.getEventType())
+                        .usageContext(event.getUsageContext() != null ? new HashSet<>(event.getUsageContext()) : null)
                         .tags(new HashSet<>(event.getTags()))
                         .build());
             }
@@ -174,12 +211,27 @@ public record EventGraphFacade(EventGraphDTO eventGraph) {
             if (eventDTOMerged != null) {
                 log.debug("Event with name {} already exists in merged graph.", event.getName());
                 eventDTOMerged.getTags().addAll(event.getTags());
+                // Обновляем описание, если оно отсутствует в существующем событии
+                if (eventDTOMerged.getEventDescription() == null && event.getEventDescription() != null) {
+                    eventDTOMerged.setEventDescription(event.getEventDescription());
+                }
+                // Обновляем тип события, если он отсутствует
+                if (eventDTOMerged.getEventType() == null && event.getEventType() != null) {
+                    eventDTOMerged.setEventType(event.getEventType());
+                }
+                // Обновляем контекст использования
+                if (eventDTOMerged.getUsageContext() == null && event.getUsageContext() != null) {
+                    eventDTOMerged.setUsageContext(new HashSet<>(event.getUsageContext()));
+                }
                 log.debug("Merged event tags: {}", eventDTOMerged.getTags());
             } else {
                 merged.addEventsItem(EventDTO.builder()
                         .id(event.getId())
                         .name(event.getName())
                         .schema(event.getSchema())
+                        .eventDescription(event.getEventDescription())
+                        .eventType(event.getEventType())
+                        .usageContext(event.getUsageContext() != null ? new HashSet<>(event.getUsageContext()) : null)
                         .tags(new HashSet<>(event.getTags()))
                         .build());
             }

@@ -9,11 +9,11 @@
       "name": "Some Service",
       "type": "SERVICE",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
-      "methodType": null,
       "tags": ["api", "events", "info"],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
@@ -23,11 +23,54 @@
       "name": "/data/execute",
       "type": "HTTP",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
       "methodType": "POST",
       "tags": ["api"],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": {
+        "pathParameters": [],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": {
+        "description": null,
+        "required": true,
+        "content": [
+          {
+            "mediaType": "application/json",
+            "schema": "{\n  \"$ref\": \"#/components/schemas/ExecuteRequest\"\n}",
+            "example": null,
+            "examples": []
+          }
+        ]
+      },
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": null,
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"done\": {\n      \"type\": \"boolean\"\n    }\n  }\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        },
+        {
+          "statusCode": "500",
+          "description": null,
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"$ref\": \"#/components/schemas/ErrorResponse\"\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "6bd7062e-0afa-4c84-a26d-f1b072fa2f51",
@@ -37,11 +80,54 @@
       "name": "/data/search",
       "type": "HTTP",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
       "methodType": "POST",
       "tags": ["api"],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": {
+        "pathParameters": [],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": {
+        "description": null,
+        "required": true,
+        "content": [
+          {
+            "mediaType": "application/json",
+            "schema": "{\n  \"$ref\": \"#/components/schemas/SearchRequest\"\n}",
+            "example": null,
+            "examples": []
+          }
+        ]
+      },
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": null,
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"$ref\": \"#/components/schemas/SearchResponse\"\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        },
+        {
+          "statusCode": "500",
+          "description": null,
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"$ref\": \"#/components/schemas/ErrorResponse\"\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "7bd7062e-0afa-4c84-a26d-f1b072fa2f52",
@@ -51,11 +137,30 @@
       "name": "/info",
       "type": "HTTP",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
       "methodType": "GET",
       "tags": ["info"],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": {
+        "pathParameters": [],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": null,
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": null,
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"$ref\": \"#/components/schemas/InfoResponse\"\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "71e58b8e-fa0d-4aad-93a4-ee71b6b7a1ff",
@@ -65,45 +170,67 @@
       "name": "topic-xyz",
       "type": "TOPIC",
       "brokerType": "KAFKA",
-      "requestBody": null,
-      "responseBody": null,
-      "methodType": null,
       "tags": ["events"],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     }
   ],
   "events": [
     {
       "id": "418afd8e-85a6-4539-9316-e986f0e96fdd",
-      "schema": "{\r\n  \"required\" : [ \"ids\" ],\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"ids\" : {\r\n      \"type\" : \"array\",\r\n      \"items\" : {\r\n        \"type\" : \"string\"\r\n      }\r\n    }\r\n  }\r\n}",
+      "schema": "{\n  \"required\" : [ \"ids\" ],\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"ids\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      }\n    }\n  }\n}",
       "name": "ExecuteRequest",
-      "tags": [],
+      "tags": ["api"],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
     },
     {
       "id": "518afd8e-85a6-4539-9316-e986f0e96fee",
-      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"query\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"limit\" : {\r\n      \"type\" : \"integer\"\r\n    }\r\n  }\r\n}",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"query\" : {\n      \"type\" : \"string\"\n    },\n    \"limit\" : {\n      \"type\" : \"integer\"\n    }\n  }\n}",
       "name": "SearchRequest",
-      "tags": [],
+      "tags": ["api"],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
     },
     {
       "id": "618afd8e-85a6-4539-9316-e986f0e96fcc",
-      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"version\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"status\" : {\r\n      \"type\" : \"string\"\r\n    }\r\n  }\r\n}",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"version\" : {\n      \"type\" : \"string\"\n    },\n    \"status\" : {\n      \"type\" : \"string\"\n    }\n  }\n}",
       "name": "InfoResponse",
-      "tags": [],
+      "tags": ["info"],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
     },
     {
       "id": "718afd8e-85a6-4539-9316-e986f0e96fbb",
-      "schema": "{\r\n  \"required\" : [ \"id\", \"type\" ],\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"id\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"type\" : {\r\n      \"type\" : \"string\"\r\n    }\r\n  },\r\n  \"x-incoming\" : {\r\n    \"topics\" : [ \"topic-xyz\" ]\r\n  }\r\n}",
+      "schema": "{\n  \"required\" : [ \"id\", \"type\" ],\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"id\" : {\n      \"type\" : \"string\"\n    },\n    \"type\" : {\n      \"type\" : \"string\"\n    }\n  },\n  \"x-incoming\" : {\n    \"topics\" : [ \"topic-xyz\" ]\n  }\n}",
       "name": "MsgAbc",
       "tags": ["events"],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": ["HTTP", "ASYNC_MESSAGING"]
+    },
+    {
+      "id": "819afd8e-85a6-4539-9316-e986f0e96faa",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"status\" : {\n      \"type\" : \"string\"\n    },\n    \"message\" : {\n      \"type\" : \"string\"\n    }\n  }\n}",
+      "name": "ErrorResponse",
+      "tags": ["api"],
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
+    },
+    {
+      "id": "919afd8e-85a6-4539-9316-e986f0e96f99",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"results\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"$ref\" : \"#/components/schemas/Item\"\n      }\n    }\n  }\n}",
+      "name": "SearchResponse",
+      "tags": ["api"],
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
     }
   ],
   "links": [
@@ -113,7 +240,7 @@
       "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
       "group": null,
       "eventId": "418afd8e-85a6-4539-9316-e986f0e96fdd",
-      "tags": []
+      "tags": ["api"]
     },
     {
       "id": "e839b3b0-d799-4f0c-875f-cfe9cefdf95e",
@@ -121,14 +248,14 @@
       "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
       "group": null,
       "eventId": "518afd8e-85a6-4539-9316-e986f0e96fee",
-      "tags": []
+      "tags": ["api"]
     },
     {
       "id": "f839b3b0-d799-4f0c-875f-cfe9cefdf95d",
       "fromId": "7bd7062e-0afa-4c84-a26d-f1b072fa2f52",
       "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
       "group": null,
-      "eventId": "618afd8e-85a6-4539-9316-e986f0e96fcc",
+      "eventId": null,
       "tags": []
     },
     {

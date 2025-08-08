@@ -1,5 +1,5 @@
 {
-  "name": "371529b4-7c88-4d2c-9504-d65ba97e6659&Notification-Service&Cart-Service",
+  "name": "Cart-Service",
   "nodes": [
     {
       "id": "e6ded6bc-5093-4d73-b652-ad920a3ab303",
@@ -11,11 +11,11 @@
       "name": "Notification-Service",
       "type": "SERVICE",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
-      "methodType": null,
       "tags": [],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "fef63cf6-bd0a-41c9-b6fc-2e4a9ee463cc",
@@ -28,11 +28,11 @@
       "name": "Cart-Topic",
       "type": "TOPIC",
       "brokerType": "KAFKA",
-      "requestBody": null,
-      "responseBody": null,
-      "methodType": null,
       "tags": [],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "0042b810-060d-47b0-a81e-12c831c982ba",
@@ -44,15 +44,15 @@
       "name": "Notification-Topic",
       "type": "TOPIC",
       "brokerType": "KAFKA",
-      "requestBody": null,
-      "responseBody": null,
-      "methodType": null,
       "tags": [],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "d79e2626-45de-4eab-924e-ba91c89fedd2",
-      "nodeDescription": null,
+      "nodeDescription": "AxenAPI Specification for Cart-Service",
       "nodeUrl": null,
       "belongsToGraph": [
         "d79e2626-45de-4eab-924e-ba91c89fedd2"
@@ -60,13 +60,13 @@
       "name": "Cart-Service",
       "type": "SERVICE",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
-      "methodType": null,
       "tags": [
         "HTTP"
       ],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "93144439-c49b-456b-933d-10bb444ec5ca",
@@ -78,9 +78,39 @@
       "name": "/api/cart",
       "type": "HTTP",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
       "methodType": "GET",
+      "httpParameters": {
+        "pathParameters": [
+          {
+            "name": "eventId",
+            "description": "ID of the event to retrieve",
+            "required": true,
+            "type": "string",
+            "schema": "{\n  \"type\" : \"string\"\n}",
+            "example": null
+          }
+        ],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": null,
+      "httpResponses": [
+  {
+    "statusCode": "200",
+    "description": "Event retrieved successfully",
+    "content": [
+      {
+        "mediaType": "application/json",
+        "schema": "{\"$ref\": \"#/components/schemas/CartRequested\"}"
+      }
+    ]
+  },
+  {
+    "statusCode": "404",
+    "description": "Event not found",
+    "content": []
+  }
+],
       "tags": [
         "HTTP"
       ],
@@ -94,7 +124,10 @@
       "name": "CartItemAdded",
       "tags": [],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": [
+        "ASYNC_MESSAGING"
+      ]
     },
     {
       "id": "dbc7e313-bdf4-45b0-8ec2-dc7320d1cf3a",
@@ -102,7 +135,10 @@
       "name": "NotificationSent",
       "tags": [],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": [
+        "ASYNC_MESSAGING"
+      ]
     },
     {
       "id": "8c1baeae-41f9-4af6-8e3a-47dcfd8590c1",
@@ -112,7 +148,10 @@
         "HTTP"
       ],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": [
+        "HTTP"
+      ]
     }
   ],
   "links": [
@@ -137,10 +176,8 @@
       "fromId": "93144439-c49b-456b-933d-10bb444ec5ca",
       "toId": "d79e2626-45de-4eab-924e-ba91c89fedd2",
       "group": null,
-      "eventId": "8c1baeae-41f9-4af6-8e3a-47dcfd8590c1",
-      "tags": [
-        "HTTP"
-      ]
+      "eventId": null,
+      "tags": []
     },
     {
       "id": "8dca855f-3ee2-4af8-9e7a-dc5dac7e9f1c",

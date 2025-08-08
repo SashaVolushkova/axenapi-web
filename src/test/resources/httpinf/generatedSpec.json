@@ -7,59 +7,10 @@
   },
   "paths" : {
     "/events/{eventId}" : {
-      "summary" : "Retrieve a specific event by ID",
-      "description" : "Description of the HTTP node",
       "get" : {
-        "tags" : [ "HTTP" ],
-        "parameters" : [ {
-          "name" : "eventId",
-          "in" : "path",
-          "description" : "ID of the event to retrieve",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
         "responses" : {
           "200" : {
-            "description" : "Event retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Event1"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Event not found"
-          }
-        }
-      },
-      "patch" : {
-        "tags" : [ "HTTP" ],
-        "parameters" : [ {
-          "name" : "eventId",
-          "in" : "path",
-          "description" : "ID of the event to retrieve",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Event retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Event1"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Event not found"
+            "description" : "OK"
           }
         }
       }
@@ -92,8 +43,7 @@
         "x-incoming" : {
           "topics" : [ "topic1" ],
           "tags" : [ "HTTP" ]
-        },
-        "x-http-name" : "/events/{eventId}"
+        }
       }
     }
   }

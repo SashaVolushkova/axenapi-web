@@ -78,7 +78,7 @@ public class LocalGitRepositoryService {
     public GitLabApi getGitLabApi() {
         try {
             URL uri = new URL(getRepositoryUrl());
-            return new GitLabApi("%s://%s".formatted(uri.getProtocol(),uri.getHost()), getRepositoryToken());
+            return new GitLabApi("%s://%s".formatted(uri.getProtocol(), uri.getHost()), getRepositoryToken());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

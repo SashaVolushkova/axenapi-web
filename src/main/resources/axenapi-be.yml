@@ -942,6 +942,111 @@ paths:
       responses:
         '200':
           description: Service is running
+  /git:
+    post:
+      summary: Create new git repository entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GitRepoDto'
+      responses:
+        '200':
+          description: Success created git repository entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitRepoDto'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+    get:
+      summary: Get list of all gits repository entities
+      responses:
+        '200':
+          description: List of all git repository entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GitRepoDto'
+  /git/{id}:
+    get:
+      summary: Get git repository entity by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Git repository entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitRepoDto'
+        '404':
+          description: Not found git repository entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+    put:
+      summary: Update git repository entity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GitRepoDto'
+      responses:
+        '200':
+          description: Success updated git repository entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitRepoDto'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        '404':
+          description: Not found git repository entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+    delete:
+      summary: Delete git repository by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success delete git repository entity
+        '404':
+          description: Not found git repository entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
 components:
   schemas:
     EventGraphDTO:
@@ -1040,11 +1145,13 @@ components:
             - RABBITMQ
             - UNDEFINED
         requestBody:
-          description: "Schema of request body"
+          description: "Schema of request body (deprecated - use httpRequestBody instead)"
           type: string
+          deprecated: true
         responseBody:
-          description: "Schema of response body"
+          description: "Schema of response body (deprecated - use httpResponses instead)"
           type: string
+          deprecated: true
         methodType:
           description: "http method type"
           enum:
@@ -1068,6 +1175,18 @@ components:
           items:
             type: string
           uniqueItems: true
+        # Новые поля для HTTP взаимодействия
+        httpParameters:
+          description: "Параметры HTTP запроса (path, headers, query)"
+          $ref: '#/components/schemas/HttpParametersDTO'
+        httpRequestBody:
+          description: "Детальное описание тела HTTP запроса с поддержкой различных media types"
+          $ref: '#/components/schemas/HttpRequestBodyDTO'
+        httpResponses:
+          description: "Описание HTTP ответов для различных статус кодов"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpResponseDTO'
 
       required:
         - name
@@ -1097,6 +1216,12 @@ components:
           type: string
         eventDescription:
           type: string
+        usageContext:
+          description: Контекст использования события - где оно применяется
+          type: array
+          items:
+            $ref: '#/components/schemas/EventUsageContextEnum'
+          uniqueItems: true
     LinkDTO:
       description: Link between two nodes in the EventGraph.
       type: object
@@ -1167,3 +1292,304 @@ components:
           type: string
           example: "ERROR"
           description: Indicates failure due to client error
+
+    # Новые схемы для HTTP взаимодействия
+    HttpParametersDTO:
+      type: object
+      description: "Параметры HTTP запроса"
+      properties:
+        pathParameters:
+          description: "Параметры пути (path parameters)"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpParameterDTO'
+        queryParameters:
+          description: "Параметры запроса (query parameters)"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpParameterDTO'
+        headerParameters:
+          description: "Заголовки запроса (header parameters)"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpParameterDTO'
+
+    HttpParameterDTO:
+      type: object
+      description: "Описание HTTP параметра"
+      properties:
+        name:
+          type: string
+          description: "Название параметра"
+          example: "userId"
+        description:
+          type: string
+          description: "Описание параметра"
+          example: "Уникальный идентификатор пользователя"
+        required:
+          type: boolean
+          description: "Обязательность параметра"
+          default: false
+        type:
+          $ref: '#/components/schemas/HttpParameterTypeEnum'
+          description: "Тип параметра"
+        schema:
+          type: string
+          description: "JSON схема параметра (дополнительные ограничения)"
+          example: '{"format": "uuid", "minLength": 36, "maxLength": 36}'
+        example:
+          type: string
+          description: "Пример значения параметра"
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      required:
+        - name
+        - type
+
+    HttpRequestBodyDTO:
+      type: object
+      description: "Описание тела HTTP запроса"
+      properties:
+        description:
+          type: string
+          description: "Описание тела запроса"
+          example: "Данные для создания пользователя"
+        required:
+          type: boolean
+          description: "Обязательность тела запроса"
+          default: false
+        content:
+          description: "Содержимое для различных media types"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpContentDTO'
+
+    HttpContentDTO:
+      type: object
+      description: "Содержимое для конкретного media type"
+      properties:
+        mediaType:
+          $ref: '#/components/schemas/HttpContentTypeEnum'
+          description: "Media type"
+        schema:
+          type: string
+          description: "JSON схема для данного media type"
+          example: '{"type": "object", "properties": {"name": {"type": "string"}}}'
+        example:
+          type: string
+          description: "Пример данных для данного media type"
+          example: '{"name": "Иван Иванов", "email": "ivan@example.com"}'
+        examples:
+          description: "Множественные примеры данных"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpExampleDTO'
+      required:
+        - mediaType
+
+    HttpExampleDTO:
+      type: object
+      description: "Пример данных"
+      properties:
+        name:
+          type: string
+          description: "Название примера"
+          example: "Пример создания пользователя"
+        summary:
+          type: string
+          description: "Краткое описание примера"
+          example: "Создание нового пользователя с базовыми данными"
+        description:
+          type: string
+          description: "Подробное описание примера"
+          example: "Этот пример показывает, как создать нового пользователя с минимальным набором данных"
+        value:
+          type: string
+          description: "Значение примера в виде строки"
+          example: '{"name": "Иван Иванов", "email": "ivan@example.com"}'
+
+    HttpResponseDTO:
+      type: object
+      description: "Описание HTTP ответа"
+      properties:
+        statusCode:
+          $ref: '#/components/schemas/HttpStatusCodeEnum'
+        description:
+          type: string
+          description: "Описание ответа"
+          example: "Успешное создание пользователя"
+        headers:
+          description: "Заголовки ответа"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpParameterDTO'
+        content:
+          description: "Содержимое ответа для различных media types"
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpContentDTO'
+      required:
+        - statusCode
+    # Enum'ы для HTTP взаимодействия
+    HttpParameterTypeEnum:
+      type: string
+      description: "Возможные типы HTTP параметров"
+      enum:
+        - integer
+        - number
+        - string
+        - boolean
+        - array
+        - object
+
+    HttpStatusCodeEnum:
+      type: string
+      description: "Возможные HTTP статус коды"
+      enum:
+        # 1xx: Informational (информационные)
+        - "100"  # Continue
+        - "101"  # Switching Protocols
+        - "102"  # Processing
+        - "103"  # Early Hints
+        # 2xx: Success (успешно)
+        - "200"  # OK
+        - "201"  # Created
+        - "202"  # Accepted
+        - "203"  # Non-Authoritative Information
+        - "204"  # No Content
+        - "205"  # Reset Content
+        - "206"  # Partial Content
+        - "207"  # Multi-Status
+        - "208"  # Already Reported
+        - "226"  # IM Used
+        # 3xx: Redirection (перенаправление)
+        - "300"  # Multiple Choices
+        - "301"  # Moved Permanently
+        - "302"  # Found
+        - "303"  # See Other
+        - "304"  # Not Modified
+        - "305"  # Use Proxy
+        - "306"  # зарезервировано
+        - "307"  # Temporary Redirect
+        - "308"  # Permanent Redirect
+        # 4xx: Client Error (ошибка клиента)
+        - "400"  # Bad Request
+        - "401"  # Unauthorized
+        - "402"  # Payment Required
+        - "403"  # Forbidden
+        - "404"  # Not Found
+        - "405"  # Method Not Allowed
+        - "406"  # Not Acceptable
+        - "407"  # Proxy Authentication Required
+        - "408"  # Request Timeout
+        - "409"  # Conflict
+        - "410"  # Gone
+        - "411"  # Length Required
+        - "412"  # Precondition Failed
+        - "413"  # Payload Too Large
+        - "414"  # URI Too Long
+        - "415"  # Unsupported Media Type
+        - "416"  # Range Not Satisfiable
+        - "417"  # Expectation Failed
+        - "418"  # I'm a teapot
+        - "419"  # Authentication Timeout
+        - "421"  # Misdirected Request
+        - "422"  # Unprocessable Entity
+        - "423"  # Locked
+        - "424"  # Failed Dependency
+        - "425"  # Too Early
+        - "426"  # Upgrade Required
+        - "428"  # Precondition Required
+        - "429"  # Too Many Requests
+        - "431"  # Request Header Fields Too Large
+        - "449"  # Retry With
+        - "451"  # Unavailable For Legal Reasons
+        - "499"  # Client Closed Request
+        # 5xx: Server Error (ошибка сервера)
+        - "500"  # Internal Server Error
+        - "501"  # Not Implemented
+        - "502"  # Bad Gateway
+        - "503"  # Service Unavailable
+        - "504"  # Gateway Timeout
+        - "505"  # HTTP Version Not Supported
+        - "506"  # Variant Also Negotiates
+        - "507"  # Insufficient Storage
+        - "508"  # Loop Detected
+        - "509"  # Bandwidth Limit Exceeded
+        - "510"  # Not Extended
+        - "511"  # Network Authentication Required
+        - "520"  # Unknown Error
+        - "521"  # Web Server Is Down
+        - "522"  # Connection Timed Out
+        - "523"  # Origin Is Unreachable
+        - "524"  # A Timeout Occurred
+        - "525"  # SSL Handshake Failed
+        - "526"  # Invalid SSL Certificate
+
+    HttpContentTypeEnum:
+      type: string
+      description: "Возможные типы содержимого (Content-Type)"
+      enum:
+        - application/json
+        - multipart/form-data
+        - text/plain
+        - text/html
+        - application/EDI-X12
+        - application/EDIFACT
+        - application/atom+xml
+        - application/font-woff
+        - application/gzip
+        - application/javascript
+        - application/octet-stream
+        - application/ogg
+        - application/pdf
+        - application/postscript
+        - application/soap+xml
+        - application/x-bittorrent
+        - application/x-tex
+        - application/xhtml+xml
+        - application/xml-dtd
+        - application/xop+xml
+        - application/zip
+        - application/x-www-form-urlencoded
+
+    EventUsageContextEnum:
+      type: string
+      description: "Контекст использования события - где оно применяется"
+      enum:
+        - HTTP
+        - ASYNC_MESSAGING
+
+    GitRepoDto:
+      type: object
+      properties:
+        id:
+          type: string
+        service:
+          type: string
+        url:
+          type: string
+        authType:
+          type: string
+          enum:
+            - TOKEN
+            - LOGIN
+        token:
+          type: string
+        login:
+          type: string
+        password:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+          enum:
+            - CODE
+            - DOCUMENTATION
+      required:
+        - service
+        - url
+        - authType
+        - token
+        - status
+        - type

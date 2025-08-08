@@ -160,7 +160,7 @@ public class GitServiceCommandImpl implements GitServiceCommand {
                 .call();
     }
 
-    private String createMergeRequestCommand(String title) throws GitLabApiException, IOException {
+    private String createMergeRequestCommand(String title) throws GitLabApiException, IOException, GitAPIException {
         localGit = localGitRepositoryService.getClonedLocalGit();
         GitLabApi gitLabApi = localGitRepositoryService.getGitLabApi();
         Project project = localGitRepositoryService.getGitLabApiProject();
@@ -172,6 +172,7 @@ public class GitServiceCommandImpl implements GitServiceCommand {
                 "",
                 gitLabApi.getUserApi().getCurrentUser().getId()
         );
+        checkoutCommand(String.valueOf(UUID.randomUUID()), true);
 
         return mergeRequest.getWebUrl();
     }

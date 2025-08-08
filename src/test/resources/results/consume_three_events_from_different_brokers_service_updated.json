@@ -4,6 +4,7 @@
   "nodes": [
     {
       "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "nodeDescription": "AxenAPI Specification for consume_three_events_from_different_brokers_service",
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "consume_three_events_from_different_brokers_service",
       "type": "SERVICE",
@@ -69,22 +70,26 @@
     {
       "id": "49e06571-8fe1-4b00-b745-245c9fce6d2c",
       "name": "EventKafkaOut",
-      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            \"kafka/newTopicOutKafka\"\n          ]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            \"kafka/newTopicOutKafka\"\n          ]\n        }\n      }",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "e5f67890-1234-5678-90ab-cdef01234567",
       "name": "EventKafka",
-      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicKafkaUpdated\"\n          ]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicKafkaUpdated\"\n          ]\n        }\n      }",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "f6789012-3456-7890-abcd-ef0123456789",
       "name": "EventRabbitMQ",
-      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicRabbitMQ\"\n            ]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicRabbitMQ\"\n            ]\n        }\n      }",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "78901234-5678-90ab-cdef-0123456789ab",
       "name": "EventJMS",
-      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicJMS\"\n            ]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-incoming\": {\n          \"topics\": [\n            \"topicJMS\"\n            ]\n        }\n      }",
+      "usageContext": ["ASYNC_MESSAGING"]
     }
   ],
   "errors": []

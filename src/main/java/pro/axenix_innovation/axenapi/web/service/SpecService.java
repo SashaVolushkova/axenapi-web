@@ -9,10 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.axenix_innovation.axenapi.web.entity.AppCodeMessage;
 import pro.axenix_innovation.axenapi.web.generate.SpecificationGenerator;
+import pro.axenix_innovation.axenapi.web.generate.SpecificationGenerator;
 import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
 import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
 import pro.axenix_innovation.axenapi.web.model.GenerateSpecPost200Response;
-import pro.axenix_innovation.axenapi.web.util.OpenAPIGenerator;
+import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
 import pro.axenix_innovation.axenapi.web.validate.EventGraphDTOValidator;
 
 import java.util.Map;
@@ -137,7 +138,7 @@ public class SpecService {
 
     public String getSpecByServiceId(EventGraphDTO eventGraphDTO, UUID serviceID) throws JsonProcessingException {
         EventGraphFacade facade = new EventGraphFacade(eventGraphDTO);
-        OpenAPI openAPISpecByServiceId = OpenAPIGenerator.getOpenAPISpecByServiceId(facade, serviceID);
+        OpenAPI openAPISpecByServiceId = OpenApiGeneratorFacade.getOpenAPISpecByServiceId(facade, serviceID);
         if(openAPISpecByServiceId == null) {
             log.error(MessageHelper.getStaticMessage(ERROR_WHILE_GET_OPEN_API_SPEC_SERVICE, serviceID));
             return "";

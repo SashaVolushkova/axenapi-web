@@ -3,10 +3,15 @@
   "nodes": [
     {
       "id": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "nodeDescription": "AxenAPI Specification for consume_one_event_service",
       "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
       "name": "consume_one_event_service",
       "type": "SERVICE",
-      "brokerType": null
+      "brokerType": null,
+      "tags": ["HTTP"],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
@@ -19,7 +24,44 @@
       "brokerType": null,
       "methodType": "GET",
       "nodeUrl": "/events/{eventId}",
-      "nodeDescription": "Description of the HTTP node"
+      "nodeDescription": "Description of the HTTP node",
+      "tags": ["HTTP"],
+      "httpParameters": {
+        "pathParameters": [
+          {
+            "name": "eventId",
+            "description": "ID of the event to retrieve",
+            "required": true,
+            "type": "string",
+            "schema": "{\"type\":\"string\"}",
+            "example": null
+          }
+        ],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": null,
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": "Event retrieved successfully",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\"$ref\":\"#/components/schemas/Event1\"}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        },
+        {
+          "statusCode": "404",
+          "description": "Event not found",
+          "headers": [],
+          "content": []
+        }
+      ]
     },
     {
       "id": "b6cc3cd9-7ae3-49e5-9082-d3a3b5f1f25a",
@@ -29,14 +71,52 @@
       "brokerType": null,
       "methodType": "PATCH",
       "nodeUrl": "/events/{eventId}",
-      "nodeDescription": "Description of the HTTP node"
+      "nodeDescription": "Description of the HTTP node",
+      "tags": ["HTTP"],
+      "httpParameters": {
+        "pathParameters": [
+          {
+            "name": "eventId",
+            "description": "ID of the event to retrieve",
+            "required": true,
+            "type": "string",
+            "schema": "{\"type\":\"string\"}",
+            "example": null
+          }
+        ],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": null,
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": "Event retrieved successfully",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\"$ref\":\"#/components/schemas/Event1\"}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        },
+        {
+          "statusCode": "404",
+          "description": "Event not found",
+          "headers": [],
+          "content": []
+        }
+      ]
     },
     {
       "id": "71e58b8e-fa0d-4aad-93a4-ee71b6b7a1ff",
       "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
       "name": "topic1",
       "type": "TOPIC",
-      "brokerType": "KAFKA"
+      "brokerType": "KAFKA",
+      "tags": ["HTTP"]
     }
   ],
   "links": [
@@ -45,7 +125,7 @@
       "fromId": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
       "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
       "group": null,
-      "eventId": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "eventId": null,
       "tags": []
     },
     {
@@ -53,7 +133,7 @@
       "fromId": "b6cc3cd9-7ae3-49e5-9082-d3a3b5f1f25a",
       "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
       "group": null,
-      "eventId": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "eventId": null,
       "tags": []
     },
     {
@@ -69,7 +149,14 @@
     {
       "id": "418afd8e-85a6-4539-9316-e986f0e96fdd",
       "name": "Event1",
-      "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Unique identifier for the event\"\n    },\n    \"data\": {\n      \"type\": \"object\",\n      \"description\": \"Payload of the event\"\n    }\n  },\n  \"x-incoming\": {\n    \"topics\": [\"topic1\"],\n       \"tags\": [\"HTTP\"]\n            },\n   \"x-http-name\": \"/events/{eventId}\"\n}"
+      "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Unique identifier for the event\"\n    },\n    \"data\": {\n      \"type\": \"object\",\n      \"description\": \"Payload of the event\"\n    }\n  },\n  \"x-incoming\": {\n    \"topics\": [\"topic1\"],\n       \"tags\": [\"HTTP\"]\n            },\n   \"x-http-name\": \"/events/{eventId}\"\n}",
+      "tags": ["HTTP"],
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": [
+        "HTTP",
+        "ASYNC_MESSAGING"
+      ]
     }
   ],
   "errors": [],

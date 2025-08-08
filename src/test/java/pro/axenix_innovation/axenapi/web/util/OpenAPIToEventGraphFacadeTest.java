@@ -251,7 +251,7 @@ class OpenAPIToEventGraphFacadeTest {
 
         assertTrue(
                 httpEvent.getTags() != null && httpEvent.getTags().contains("http3event"),
-                "Событие '3' должн�� содержать тэг 'http3event'"
+                "Событие '3' должно содержать тэг 'http3event'"
         );
 
 
@@ -259,14 +259,27 @@ class OpenAPIToEventGraphFacadeTest {
                 .filter(link -> link.getEventId() != null && link.getEventId().equals(httpEvent.getId()))
                 .toList();
 
-        assertFalse(linksToHttpEvent.isEmpty(), "Должны существовать связи, ссылающиеся на событие '3'");
+        // В новой логике HTTP методы без request body не создают связи с событиями
+        // GET и PATCH методы в этом тесте ссылаются на схему "3" только в response, не в request body
+        assertTrue(linksToHttpEvent.isEmpty(), "Не должны существовать связи, ссылающиеся на событие '3', так как это response-схема");
 
-        boolean allLinksHaveHttpTags = linksToHttpEvent.stream()
-                .allMatch(link -> link.getTags() != null &&
-                        link.getTags().contains("HTTP") &&
-                        link.getTags().contains("http3event"));
+        // Проверяем, что HTTP узлы создались с null eventId
+        List<NodeDTO> httpNodes = graphDTO.getNodes().stream()
+                .filter(node -> node.getType() == NodeDTO.TypeEnum.HTTP)
+                .toList();
 
-        assertTrue(allLinksHaveHttpTags, "Все связи, ссылающиеся на событие '3', должны содержать тэги 'HTTP' и 'http3event'");
+        assertFalse(httpNodes.isEmpty(), "HTTP узлы должны существовать");
+
+        List<LinkDTO> httpLinks = graphDTO.getLinks().stream()
+                .filter(link -> httpNodes.stream().anyMatch(node -> node.getId().equals(link.getFromId())))
+                .toList();
+
+        assertFalse(httpLinks.isEmpty(), "Связи от HTTP узлов должны существовать");
+
+        boolean allHttpLinksHaveNullEvent = httpLinks.stream()
+                .allMatch(link -> link.getEventId() == null);
+
+        assertTrue(allHttpLinksHaveNullEvent, "Все связи от HTTP узлов должны иметь null eventId, так как нет request body");
     }
 
     @Test
@@ -470,7 +483,7 @@ class OpenAPIToEventGraphFacadeTest {
         assertEquals("TopicA", topicNode.getName());
         assertEquals(NodeDTO.BrokerTypeEnum.UNDEFINED,topicNode.getBrokerType(), "BrokerType должен быть null для undefined_broker");
 
-        // Проверя��м, что создалась связь с null eventId
+        // Проверяем, что создалась связь с null eventId
         LinkDTO link = graphDTO.getLinks().stream()
                 .findFirst()
                 .orElse(null);
@@ -578,7 +591,7 @@ class OpenAPIToEventGraphFacadeTest {
         assertEquals("/test", httpNode.getNodeUrl());
         assertEquals(NodeDTO.MethodTypeEnum.POST, httpNode.getMethodType());
 
-        // Проверяем, что создалась связь с null eventId
+        // Проверяем, что создалась связь �� null eventId
         LinkDTO link = graphDTO.getLinks().stream()
                 .findFirst()
                 .orElse(null);
@@ -722,7 +735,7 @@ class OpenAPIToEventGraphFacadeTest {
         List<LinkDTO> linksWithNullEvent = graphDTO.getLinks().stream()
                 .filter(link -> link.getEventId() == null)
                 .toList();
-        assertEquals(2, linksWithNullEvent.size(), "Должно быть 2 св��зи с null eventId");
+        assertEquals(2, linksWithNullEvent.size(), "Должно быть 2 связи с null eventId");
 
         // Проверяем связь от HTTP узла к сервису
         LinkDTO httpLink = graphDTO.getLinks().stream()

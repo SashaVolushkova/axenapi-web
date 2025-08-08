@@ -5,3 +5,9 @@ databaseChangeLog:
   - include:
       file: changes/01-init-change-set.sql
       relativeToChangelogFile: true
+  - changeSet:
+      id: 2
+      author: yuliya.kopylova
+  - include:
+      file: changes/02-add-fields_to-gitrepo.sql
+      relativeToChangelogFile: true

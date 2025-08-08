@@ -83,4 +83,62 @@ class JsonToSchemaGenerationServiceTest {
 //
 //        assertEquals(expectedSchema, generatedSchema);
 //    }
+
+    @Test
+    void testNestedObject() throws Exception {
+        JsonToSchemaGenerationService service = new JsonToSchemaGenerationService();
+        String jsonInput = "{ \"user\": { \"name\": \"Alice\", \"age\": 25 } }";
+        String expectedSchema = "{\"type\":\"object\",\"properties\":{\"user\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"age\":{\"type\":\"integer\"}}}}}";
+        String generatedSchema = service.generateSchema(jsonInput);
+        assertEquals(expectedSchema, generatedSchema);
+    }
+
+    @Test
+    void testArrayOfObjects() throws Exception {
+        JsonToSchemaGenerationService service = new JsonToSchemaGenerationService();
+        String jsonInput = "{ \"users\": [ { \"name\": \"Bob\", \"age\": 28 } ] }";
+        String expectedSchema = "{\"type\":\"object\",\"properties\":{\"users\":{\"type\":\"array\",\"items\":{\"name\":{\"type\":\"string\"},\"age\":{\"type\":\"integer\"}}}}}";
+        String generatedSchema = service.generateSchema(jsonInput);
+        assertEquals(expectedSchema, generatedSchema);
+    }
+
+    @Test
+    void testArrayOfPrimitives() throws Exception {
+        JsonToSchemaGenerationService service = new JsonToSchemaGenerationService();
+        String jsonInput = "{ \"tags\": [\"tag1\", \"tag2\"] }";
+        String expectedSchema = "{\"type\":\"object\",\"properties\":{\"tags\":{\"type\":\"array\"}}}";
+        String generatedSchema = service.generateSchema(jsonInput);
+        assertEquals(expectedSchema, generatedSchema);
+    }
+
+    @Test
+    void testEmptyObject() throws Exception {
+        JsonToSchemaGenerationService service = new JsonToSchemaGenerationService();
+        String jsonInput = "{}";
+        String expectedSchema = "{\"type\":\"object\",\"properties\":{}}";
+        String generatedSchema = service.generateSchema(jsonInput);
+        assertEquals(expectedSchema, generatedSchema);
+    }
+
+    @Test
+    void testPrimitiveTypes() throws Exception {
+        JsonToSchemaGenerationService service = new JsonToSchemaGenerationService();
+        String jsonInput = "{ \"str\": \"abc\", \"int\": 1, \"num\": 1.5, \"bool\": true }";
+        String expectedSchema = "{\"type\":\"object\",\"properties\":{\"str\":{\"type\":\"string\"},\"int\":{\"type\":\"integer\"},\"num\":{\"type\":\"number\"},\"bool\":{\"type\":\"boolean\"}}}";
+        String generatedSchema = service.generateSchema(jsonInput);
+        assertEquals(expectedSchema, generatedSchema);
+    }
+
+    @Test
+    void testInvalidJsonThrowsException() {
+        JsonToSchemaGenerationService service = new JsonToSchemaGenerationService();
+        String invalidJson = "{ name: 'no quotes' }";
+        try {
+            service.generateSchema(invalidJson);
+        } catch (Exception e) {
+            // Ожидаем IOException
+            return;
+        }
+        throw new AssertionError("Expected exception for invalid JSON");
+    }
 }

@@ -1,4 +1,5 @@
 package pro.axenix_innovation.axenapi.web.generate.impl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -22,6 +23,28 @@ public class CodeGeneratorImplTest {
         Mockito.when(messageSource.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any()))
                 .thenReturn("stub message");
         MessageHelper.setStaticMessageSource(messageSource);
+    }
+
+    @AfterEach
+    void tearDown() {
+        deleteDirectory(new File("out/Test Service"));
+        deleteDirectory(new File("out/Test_Service"));
+    }
+
+    void deleteDirectory(File directory) {
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        deleteDirectory(file);
+                    } else {
+                        file.delete();
+                    }
+                }
+            }
+        }
+        directory.delete();
     }
 
 

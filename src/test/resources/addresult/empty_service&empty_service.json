@@ -3,13 +3,21 @@
   "nodes": [
     {
       "id": "123e4567-e89b-12d3-a456-426614174000",
+      "nodeDescription": "axenapi Specification for empty service",
+      "nodeUrl": null,
       "name": "empty_service",
       "type": "SERVICE",
       "brokerType": null,
-      "belongsToGraph": ["123e4567-e89b-12d3-a456-426614174000"]
+      "belongsToGraph": ["123e4567-e89b-12d3-a456-426614174000"],
+      "tags": [],
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     }
   ],
   "links": [],
   "events": [],
-  "errors": []
+  "errors": [],
+  "tags": []
 }

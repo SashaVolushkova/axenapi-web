@@ -1,0 +1,241 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "User Management API",
+    "version": "1.0.0",
+    "description": "API для управления пользователями с комплексными параметрами"
+  },
+  "paths": {
+    "/users/{userId}": {
+      "post": {
+        "summary": "Создание или обновление пользователя",
+        "description": "Создает нового пользователя или обновляет существующего с использованием различных типов параметров",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "Уникальный идентификатор пользователя",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Токен авторизации",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+          },
+          {
+            "name": "includeDetails",
+            "in": "query",
+            "required": false,
+            "description": "Включать ли детальную информацию в ответ",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"],
+              "default": "false"
+            },
+            "example": "true"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Данные пользователя для создания или обновления",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreateRequest"
+              },
+              "example": {
+                "name": "Иван Иванов",
+                "email": "ivan.ivanov@example.com",
+                "age": 30,
+                "isActive": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Пользователь успешно обновлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserUpdateResponse"
+                },
+                "example": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "name": "Иван Иванов",
+                  "email": "ivan.ivanov@example.com",
+                  "age": 30,
+                  "isActive": true,
+                  "updatedAt": "2023-12-01T10:30:00Z"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Пользователь успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCreateResponse"
+                },
+                "example": {
+                  "id": "456e7890-e89b-12d3-a456-426614174001",
+                  "name": "Иван Иванов",
+                  "email": "ivan.ivanov@example.com",
+                  "age": 30,
+                  "isActive": true,
+                  "createdAt": "2023-12-01T10:30:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Некорректные данные запроса",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "VALIDATION_ERROR",
+                  "message": "Переданы некорректные данные",
+                  "details": [
+                    "Поле 'email' должно содержать корректный email адрес",
+                    "Поле 'age' должно быть больше 18"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserCreateRequest": {
+        "type": "object",
+        "description": "Данные для создания или обновления пользователя",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Имя пользователя"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email пользователя"
+          },
+          "age": {
+            "type": "integer",
+            "minimum": 18,
+            "maximum": 120,
+            "description": "Возраст пользователя"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Активен ли пользователь"
+          }
+        },
+        "required": ["name", "email"]
+      },
+      "UserUpdateResponse": {
+        "type": "object",
+        "description": "Ответ при успешном обновлении пользователя",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Уникальный идентификатор пользователя"
+          },
+          "name": {
+            "type": "string",
+            "description": "Имя пользователя"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email пользователя"
+          },
+          "age": {
+            "type": "integer",
+            "description": "Возраст пользователя"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Активен ли пользователь"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Время последнего обновления"
+          }
+        }
+      },
+      "UserCreateResponse": {
+        "type": "object",
+        "description": "Ответ при успешном создании пользователя",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Уникальный идентификатор пользователя"
+          },
+          "name": {
+            "type": "string",
+            "description": "Имя пользователя"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email пользователя"
+          },
+          "age": {
+            "type": "integer",
+            "description": "Возраст пользователя"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Активен ли пользователь"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Время создания"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Ответ с ошибкой",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Код ошибки"
+          },
+          "message": {
+            "type": "string",
+            "description": "Сообщение об ошибке"
+          },
+          "details": {
+            "type": "array",
+            "description": "Детали ошибки",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

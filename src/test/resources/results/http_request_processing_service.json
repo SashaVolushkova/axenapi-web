@@ -3,11 +3,15 @@
   "nodes": [
     {
       "id": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
+      "nodeDescription": "AxenAPI Specification for HTTP request processing service",
       "belongsToGraph": ["56196b0a-a244-4d83-85b7-1bb8c2adf97c"],
       "name": "http_request_processing_service",
       "type": "SERVICE",
       "brokerType": null,
-      "tags": ["HTTP"]
+      "tags": ["HTTP"],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
@@ -18,7 +22,43 @@
       "methodType": "GET",
       "nodeUrl": "/api/users/{userId}",
       "nodeDescription": "Retrieve user information by user ID",
-      "tags": ["HTTP"]
+      "tags": ["HTTP"],
+      "httpParameters": {
+        "pathParameters": [
+          {
+            "name": "userId",
+            "description": "ID of the user to retrieve",
+            "required": true,
+            "type": "string",
+            "schema": "{\n  \"type\": \"string\"\n}",
+            "example": null
+          }
+        ],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": null,
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": "User retrieved successfully",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"$ref\": \"#/components/schemas/User\"\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        },
+        {
+          "statusCode": "404",
+          "description": "User not found",
+          "headers": [],
+          "content": []
+        }
+      ]
     }
   ],
   "links": [
@@ -27,7 +67,7 @@
       "fromId": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
       "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
       "group": null,
-      "eventId": "418afd8e-85a6-4539-9316-e986f0e96fdd",
+      "eventId": null,
       "tags": []
     }
   ],
@@ -35,7 +75,11 @@
     {
       "id": "418afd8e-85a6-4539-9316-e986f0e96fdd",
       "name": "User",
-      "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Unique identifier for the user\"\n    },\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Name of the user\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Email address of the user\"\n    }\n  }\n}"
+      "schema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\n      \"type\": \"string\",\n      \"description\": \"Unique identifier for the user\"\n    },\n    \"name\": {\n      \"type\": \"string\",\n      \"description\": \"Name of the user\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Email address of the user\"\n    }\n  }\n}",
+      "tags": ["HTTP"],
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
     }
   ],
   "errors": [],

@@ -25,11 +25,27 @@ public class GitRepo {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "token")
-    private String token;
+    @Column(name = "service")
+    private String service;
 
     @Column(name = "url")
     private String url;
+
+    @Column(name = "auth_type")
+    @Enumerated(EnumType.STRING)
+    private GitRepoAuthType authType;
+
+    @Column(name = "token")
+    private String token;
+
+    @Column(name = "login")
+    private String login;
+
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "status")
+    private String status;
 
     @Column(name = "type")
     @Enumerated(EnumType.STRING)

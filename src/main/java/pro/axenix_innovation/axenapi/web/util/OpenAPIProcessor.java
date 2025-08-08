@@ -30,7 +30,7 @@ import static pro.axenix_innovation.axenapi.web.model.NodeDTO.TypeEnum.TOPIC;
 @Slf4j
 public class OpenAPIProcessor {
 
-    public static UUID createServiceNode(EventGraphFacade eventGraph, String title, List<String> documentationFileLinks, UUID serviceNodeId) {
+    public static UUID createServiceNode(EventGraphFacade eventGraph, String title, String description, List<String> documentationFileLinks, UUID serviceNodeId) {
         UUID serviceNodeUUId = serviceNodeId == null ? UUID.randomUUID() : serviceNodeId;
 
         NodeDTO serviceNode = NodeDTO.builder()
@@ -38,6 +38,7 @@ public class OpenAPIProcessor {
                 .name(title)
                 .type(SERVICE)
                 .brokerType(null)
+                .nodeDescription(description)
                 .build();
 
         serviceNode.setBelongsToGraph(List.of(serviceNodeUUId));
@@ -118,6 +119,8 @@ public class OpenAPIProcessor {
                 eventGraph.addAllNodes(httpNodes);
                 for (Operation operation : getOperations(path)) {
                     EventDTO linkEvent = null;
+                    
+                    // Обрабатываем request body - только для него создаем связь
                     if (operation.getRequestBody() != null && operation.getRequestBody().getContent() != null) {
                         MediaType requestMedia = operation.getRequestBody().getContent().get("application/json");
                         if (requestMedia != null && requestMedia.getSchema() != null) {
@@ -129,20 +132,35 @@ public class OpenAPIProcessor {
                             }
                         }
                     }
-                    if (linkEvent == null) {
-                        ApiResponse response = operation.getResponses() != null ? operation.getResponses().get("200") : null;
-                        if (response != null && response.getContent() != null) {
-                            MediaType media = response.getContent().get("application/json");
-                            if (media != null && media.getSchema() != null) {
-                                Schema<?> schema = media.getSchema();
-                                EventDTO event = resolveEventFromSchema(schema, components, createdEvents);
-                                if (event != null) {
-                                    eventGraph.addEvent(event);
-                                    linkEvent = event;
+                    
+                    // Обрабатываем все responses - создаем события, но НЕ создаем связи
+                    if (operation.getResponses() != null) {
+                        for (Map.Entry<String, ApiResponse> responseEntry : operation.getResponses().entrySet()) {
+                            ApiResponse response = responseEntry.getValue();
+                            if (response.getContent() != null) {
+                                MediaType media = response.getContent().get("application/json");
+                                if (media != null && media.getSchema() != null) {
+                                    Schema<?> schema = media.getSchema();
+                                    EventDTO event = resolveEventFromSchema(schema, components, createdEvents);
+                                    if (event != null) {
+                                        // Добавляем событие в граф, но не создаем для него связь
+                                        eventGraph.addEvent(event);
+                                        
+                                        // Добавляем теги к событию
+                                        if (event.getTags() == null) {
+                                            event.setTags(new HashSet<>());
+                                        }
+                                        if (pathTags != null && !pathTags.isEmpty()) {
+                                            event.getTags().addAll(pathTags);
+                                        }
+//                                        event.getTags().add("HTTP");
+                                    }
                                 }
                             }
                         }
                     }
+                    
+                    // Создаем связь только для request события
                     if (linkEvent != null) {
                         if (linkEvent.getTags() == null) {
                             linkEvent.setTags(new HashSet<>());
@@ -152,12 +170,13 @@ public class OpenAPIProcessor {
                             linkEvent.getTags().addAll(pathTags);
                         }
 
-                        linkEvent.getTags().add("HTTP");
+//                        linkEvent.getTags().add("HTTP");
 
                         for (NodeDTO nodeDTO : httpNodes) {
                             createHttpLink(nodeDTO, serviceNode, linkEvent, eventGraph);
                         }
                     } else {
+                        // Если нет request события, создаем связь без события
                         for (NodeDTO nodeDTO : httpNodes) {
                             createHttpLink(nodeDTO, serviceNode, null, eventGraph);
                         }
@@ -287,25 +306,29 @@ public class OpenAPIProcessor {
             }
             Schema<?> resolvedSchema = components.getSchemas().get(schemaName);
             if (resolvedSchema == null) return null;
+            
             EventDTO event = EventDTO.builder()
                     .id(UUID.randomUUID())
                     .name(schemaName)
-                    .eventDescription(resolvedSchema.getDescription() != null ? resolvedSchema.getDescription() : schemaName)
+                    .eventDescription(resolvedSchema.getDescription() != null ? resolvedSchema.getDescription() : null)
                     .schema(Json.pretty(resolvedSchema))
                     .tags(new HashSet<>())
                     .build();
             createdEvents.put(schemaName, event);
+            log.debug("Created event '{}' from schema", schemaName);
             return event;
         }
         return null;
     }
 
     private static List<NodeDTO> createHttpNodes(String key, PathItem path, Set<String> pathTags, NodeDTO serviceNode, Components components) {
+        System.out.println("=== CREATE HTTP NODES for path: " + key + " ===");
         String desc = path.getDescription();
         Map<PathItem.HttpMethod, Operation> map = path.readOperationsMap();
         List<NodeDTO> res = new ArrayList<>();
 
         for (Map.Entry<PathItem.HttpMethod, Operation> entry : map.entrySet()) {
+            System.out.println("=== Processing HTTP method: " + entry.getKey() + " ===");
             PathItem.HttpMethod method = entry.getKey();
             Operation operation = entry.getValue();
 
@@ -358,6 +381,14 @@ public class OpenAPIProcessor {
                     .nodeUrl(key)
                     .build();
 
+            // Заполняем новые поля для HTTP взаимодействия
+            populateHttpFields(node, operation, components);
+            
+            // Проверяем, что поля действительно установлены
+            log.debug("After populateHttpFields - node {} has httpParameters: {}", node.getName(), node.getHttpParameters() != null);
+            log.debug("After populateHttpFields - node {} has httpRequestBody: {}", node.getName(), node.getHttpRequestBody() != null);
+            log.debug("After populateHttpFields - node {} has httpResponses: {}", node.getName(), node.getHttpResponses() != null ? node.getHttpResponses().size() : "null");
+
             res.add(node);
         }
 
@@ -384,6 +415,7 @@ public class OpenAPIProcessor {
                 .id(UUID.randomUUID())
                 .schema(schemaString)
                 .name(schemaKey)
+                .eventDescription(schema.getDescription() != null ? schema.getDescription() : null)
                 .tags(eventTags);
         eventGraph.addEvent(event);
         createdEvents.put(schemaKey, event);
@@ -720,5 +752,329 @@ public class OpenAPIProcessor {
         if (event != null) {
             event.getTags().addAll(tagSet);
         }
+    }
+
+    /**
+     * Заполняет новые поля HTTP нод для детального описания HTTP взаимодействия
+     */
+    private static void populateHttpFields(NodeDTO node, Operation operation, Components components) {
+        // Импортируем необходимые классы для новых DTO
+        try {
+            System.out.println("=== POPULATE HTTP FIELDS START for node: " + node.getName() + " ===");
+            log.info("Populating HTTP fields for node: {}", node.getName());
+            
+            // Заполняем HTTP параметры
+            pro.axenix_innovation.axenapi.web.model.HttpParametersDTO httpParams = createHttpParameters(operation);
+            System.out.println("=== Created HTTP parameters: " + httpParams + " ===");
+            log.info("Created HTTP parameters for node {}: {}", node.getName(), httpParams);
+            node.setHttpParameters(httpParams);
+            System.out.println("=== Set HTTP parameters on node ===");
+            
+            // Заполняем HTTP request body
+            pro.axenix_innovation.axenapi.web.model.HttpRequestBodyDTO httpRequestBody = createHttpRequestBody(operation, components);
+            log.debug("Created HTTP request body for node {}: {}", node.getName(), httpRequestBody);
+            node.setHttpRequestBody(httpRequestBody);
+            
+            // Заполняем HTTP responses
+            List<pro.axenix_innovation.axenapi.web.model.HttpResponseDTO> httpResponses = createHttpResponses(operation, components);
+            log.debug("Created HTTP responses for node {}: {}", node.getName(), httpResponses);
+            node.setHttpResponses(httpResponses);
+            
+            // Заполняем старые поля для обратной совместимости
+            populateLegacyFields(node, operation, components);
+            
+            log.debug("Successfully populated HTTP fields for node: {}", node.getName());
+            
+        } catch (Exception e) {
+            log.warn("Failed to populate HTTP fields for node {}: {}", node.getName(), e.getMessage(), e);
+        }
+    }
+
+    private static pro.axenix_innovation.axenapi.web.model.HttpParametersDTO createHttpParameters(Operation operation) {
+        pro.axenix_innovation.axenapi.web.model.HttpParametersDTO httpParams = 
+            new pro.axenix_innovation.axenapi.web.model.HttpParametersDTO();
+        
+        List<pro.axenix_innovation.axenapi.web.model.HttpParameterDTO> pathParams = new ArrayList<>();
+        List<pro.axenix_innovation.axenapi.web.model.HttpParameterDTO> queryParams = new ArrayList<>();
+        List<pro.axenix_innovation.axenapi.web.model.HttpParameterDTO> headerParams = new ArrayList<>();
+
+        if (operation.getParameters() != null && !operation.getParameters().isEmpty()) {
+            for (io.swagger.v3.oas.models.parameters.Parameter param : operation.getParameters()) {
+                pro.axenix_innovation.axenapi.web.model.HttpParameterDTO httpParam = 
+                    new pro.axenix_innovation.axenapi.web.model.HttpParameterDTO();
+                
+                httpParam.setName(param.getName());
+                httpParam.setDescription(param.getDescription());
+                httpParam.setRequired(param.getRequired() != null ? param.getRequired() : false);
+                
+                // Определяем тип параметра
+                if (param.getSchema() != null) {
+                    String type = param.getSchema().getType();
+                    if (type != null) {
+                        try {
+                            httpParam.setType(pro.axenix_innovation.axenapi.web.model.HttpParameterTypeEnum.fromValue(type));
+                        } catch (Exception e) {
+                            httpParam.setType(pro.axenix_innovation.axenapi.web.model.HttpParameterTypeEnum.STRING);
+                        }
+                    } else {
+                        httpParam.setType(pro.axenix_innovation.axenapi.web.model.HttpParameterTypeEnum.STRING);
+                    }
+                    
+                    // Сохраняем полную схему как JSON
+                    httpParam.setSchema(Json.pretty(param.getSchema()));
+                } else {
+                    httpParam.setType(pro.axenix_innovation.axenapi.web.model.HttpParameterTypeEnum.STRING);
+                }
+                
+                // Добавляем пример
+                if (param.getExample() != null) {
+                    httpParam.setExample(param.getExample().toString());
+                }
+
+                // Распределяем по типам
+                switch (param.getIn()) {
+                    case "path":
+                        pathParams.add(httpParam);
+                        break;
+                    case "query":
+                        queryParams.add(httpParam);
+                        break;
+                    case "header":
+                        headerParams.add(httpParam);
+                        break;
+                }
+            }
+        }
+
+        httpParams.setPathParameters(pathParams);
+        httpParams.setQueryParameters(queryParams);
+        httpParams.setHeaderParameters(headerParams);
+
+        return httpParams;
+    }
+
+    private static pro.axenix_innovation.axenapi.web.model.HttpRequestBodyDTO createHttpRequestBody(Operation operation, Components components) {
+        if (operation.getRequestBody() == null) {
+            return null;
+        }
+
+        pro.axenix_innovation.axenapi.web.model.HttpRequestBodyDTO requestBody = 
+            new pro.axenix_innovation.axenapi.web.model.HttpRequestBodyDTO();
+        
+        requestBody.setDescription(operation.getRequestBody().getDescription());
+        requestBody.setRequired(operation.getRequestBody().getRequired() != null ? operation.getRequestBody().getRequired() : false);
+
+        List<pro.axenix_innovation.axenapi.web.model.HttpContentDTO> contentList = new ArrayList<>();
+        
+        if (operation.getRequestBody().getContent() != null) {
+            for (Map.Entry<String, MediaType> entry : operation.getRequestBody().getContent().entrySet()) {
+                pro.axenix_innovation.axenapi.web.model.HttpContentDTO content = 
+                    new pro.axenix_innovation.axenapi.web.model.HttpContentDTO();
+                
+                try {
+                    content.setMediaType(pro.axenix_innovation.axenapi.web.model.HttpContentTypeEnum.fromValue(entry.getKey()));
+                } catch (Exception e) {
+                    // Если mediaType не найден в enum, пропускаем
+                    continue;
+                }
+                
+                MediaType mediaType = entry.getValue();
+                if (mediaType.getSchema() != null) {
+                    content.setSchema(Json.pretty(mediaType.getSchema()));
+                }
+                
+                if (mediaType.getExample() != null) {
+                    content.setExample(Json.pretty(mediaType.getExample()));
+                }
+                
+                content.setExamples(new ArrayList<>());
+                contentList.add(content);
+            }
+        }
+
+        requestBody.setContent(contentList);
+        return requestBody;
+    }
+
+    private static List<pro.axenix_innovation.axenapi.web.model.HttpResponseDTO> createHttpResponses(Operation operation, Components components) {
+        if (operation.getResponses() == null || operation.getResponses().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<pro.axenix_innovation.axenapi.web.model.HttpResponseDTO> responses = new ArrayList<>();
+
+        for (Map.Entry<String, ApiResponse> entry : operation.getResponses().entrySet()) {
+            pro.axenix_innovation.axenapi.web.model.HttpResponseDTO response = 
+                new pro.axenix_innovation.axenapi.web.model.HttpResponseDTO();
+            
+            try {
+                response.setStatusCode(pro.axenix_innovation.axenapi.web.model.HttpStatusCodeEnum.fromValue(entry.getKey()));
+            } catch (Exception e) {
+                // Если статус код не найден в enum, пропускаем
+                continue;
+            }
+            
+            response.setDescription(entry.getValue().getDescription());
+            response.setHeaders(new ArrayList<>());
+
+            List<pro.axenix_innovation.axenapi.web.model.HttpContentDTO> contentList = new ArrayList<>();
+            
+            if (entry.getValue().getContent() != null) {
+                for (Map.Entry<String, MediaType> contentEntry : entry.getValue().getContent().entrySet()) {
+                    pro.axenix_innovation.axenapi.web.model.HttpContentDTO content = 
+                        new pro.axenix_innovation.axenapi.web.model.HttpContentDTO();
+                    
+                    try {
+                        content.setMediaType(pro.axenix_innovation.axenapi.web.model.HttpContentTypeEnum.fromValue(contentEntry.getKey()));
+                    } catch (Exception e) {
+                        // Если mediaType не найден в enum, пропускаем
+                        continue;
+                    }
+                    
+                    MediaType mediaType = contentEntry.getValue();
+                    if (mediaType.getSchema() != null) {
+                        content.setSchema(Json.pretty(mediaType.getSchema()));
+                    }
+                    
+                    if (mediaType.getExample() != null) {
+                        content.setExample(Json.pretty(mediaType.getExample()));
+                    }
+                    
+                    content.setExamples(new ArrayList<>());
+                    contentList.add(content);
+                }
+            }
+
+            response.setContent(contentList);
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
+    private static void populateLegacyFields(NodeDTO node, Operation operation, Components components) {
+        // Заполняем старые поля requestBody и responseBody для обратной совместимости
+        
+        // requestBody - берем первый найденный request body
+        if (operation.getRequestBody() != null && operation.getRequestBody().getContent() != null) {
+            for (MediaType mediaType : operation.getRequestBody().getContent().values()) {
+                if (mediaType.getSchema() != null) {
+                    node.setRequestBody(Json.pretty(mediaType.getSchema()));
+                    break;
+                }
+            }
+        }
+
+        // responseBody - берем все ответы и объединяем в один JSON
+        if (operation.getResponses() != null && !operation.getResponses().isEmpty()) {
+            Map<String, Object> allResponses = new HashMap<>();
+            
+            for (Map.Entry<String, ApiResponse> entry : operation.getResponses().entrySet()) {
+                Map<String, Object> responseData = new HashMap<>();
+                responseData.put("description", entry.getValue().getDescription());
+                
+                if (entry.getValue().getContent() != null) {
+                    Map<String, Object> content = new HashMap<>();
+                    for (Map.Entry<String, MediaType> contentEntry : entry.getValue().getContent().entrySet()) {
+                        Map<String, Object> mediaData = new HashMap<>();
+                        if (contentEntry.getValue().getSchema() != null) {
+                            try {
+                                mediaData.put("schema", Json.mapper().readValue(Json.pretty(contentEntry.getValue().getSchema()), Object.class));
+                            } catch (Exception e) {
+                                mediaData.put("schema", Json.pretty(contentEntry.getValue().getSchema()));
+                            }
+                        }
+                        if (contentEntry.getValue().getExample() != null) {
+                            mediaData.put("example", contentEntry.getValue().getExample());
+                        }
+                        content.put(contentEntry.getKey(), mediaData);
+                    }
+                    responseData.put("content", content);
+                }
+                
+                allResponses.put(entry.getKey(), responseData);
+            }
+            
+            try {
+                node.setResponseBody(Json.pretty(allResponses));
+            } catch (Exception e) {
+                log.warn("Failed to serialize response body for node {}: {}", node.getName(), e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Пост-обработка для установки usageContext событий на основе их использования в графе
+     */
+    public static void postProcessUsageContext(EventGraphFacade eventGraph) {
+        log.info("Starting post-processing to set usageContext for events");
+        
+        // Создаем множества для отслеживания событий по контексту использования
+        Set<UUID> httpEventIds = new HashSet<>();
+        Set<UUID> asyncEventIds = new HashSet<>();
+        
+        // 1. Проходим по всем связям и определяем контекст использования событий через связи
+        for (pro.axenix_innovation.axenapi.web.model.LinkDTO link : eventGraph.getLinks()) {
+            if (link.getEventId() == null) {
+                continue; // Пропускаем связи без событий
+            }
+            
+            // Получаем узлы связи
+            pro.axenix_innovation.axenapi.web.model.NodeDTO fromNode = eventGraph.getNodeById(link.getFromId());
+            pro.axenix_innovation.axenapi.web.model.NodeDTO toNode = eventGraph.getNodeById(link.getToId());
+            
+            if (fromNode == null || toNode == null) {
+                continue;
+            }
+            
+            // Определяем контекст на основе типов узлов
+            boolean isHttpContext = (fromNode.getType() == pro.axenix_innovation.axenapi.web.model.NodeDTO.TypeEnum.HTTP) ||
+                                   (toNode.getType() == pro.axenix_innovation.axenapi.web.model.NodeDTO.TypeEnum.HTTP);
+            
+            boolean isAsyncContext = (fromNode.getType() == pro.axenix_innovation.axenapi.web.model.NodeDTO.TypeEnum.TOPIC) ||
+                                    (toNode.getType() == pro.axenix_innovation.axenapi.web.model.NodeDTO.TypeEnum.TOPIC);
+            
+            if (isHttpContext) {
+                httpEventIds.add(link.getEventId());
+                log.debug("Event {} marked as HTTP context via link", link.getEventId());
+            }
+            
+            if (isAsyncContext) {
+                asyncEventIds.add(link.getEventId());
+                log.debug("Event {} marked as ASYNC context via link", link.getEventId());
+            }
+        }
+        
+        // 2. Дополнительно проверяем события, которые могут не иметь связей, но используются в HTTP контексте
+        // Если в графе есть HTTP узлы, то все события считаются HTTP событиями
+        boolean hasHttpNodes = eventGraph.getNodes().stream()
+                .anyMatch(node -> node.getType() == pro.axenix_innovation.axenapi.web.model.NodeDTO.TypeEnum.HTTP);
+        
+        boolean hasTopicNodes = eventGraph.getNodes().stream()
+                .anyMatch(node -> node.getType() == pro.axenix_innovation.axenapi.web.model.NodeDTO.TypeEnum.TOPIC);
+        
+        // Устанавливаем usageContext для всех событий
+        for (pro.axenix_innovation.axenapi.web.model.EventDTO event : eventGraph.eventGraph().getEvents()) {
+            Set<pro.axenix_innovation.axenapi.web.model.EventUsageContextEnum> usageContext = new HashSet<>();
+            
+            // Событие имеет HTTP контекст, если:
+            // 1. Оно участвует в связи с HTTP узлом, ИЛИ
+            // 2. В графе есть HTTP узлы (значит, это HTTP спецификация)
+            if (httpEventIds.contains(event.getId()) || hasHttpNodes) {
+                usageContext.add(pro.axenix_innovation.axenapi.web.model.EventUsageContextEnum.HTTP);
+                log.debug("Event '{}' marked as HTTP context", event.getName());
+            }
+            
+            // Событие имеет ASYNC контекст, если оно участвует в связи с TOPIC узлом
+            if (asyncEventIds.contains(event.getId())) {
+                usageContext.add(pro.axenix_innovation.axenapi.web.model.EventUsageContextEnum.ASYNC_MESSAGING);
+                log.debug("Event '{}' marked as ASYNC context", event.getName());
+            }
+            
+            event.setUsageContext(usageContext);
+            log.debug("Set usageContext for event '{}': {}", event.getName(), usageContext);
+        }
+        
+        log.info("Completed post-processing usageContext for {} events", eventGraph.eventGraph().getEvents().size());
     }
 }

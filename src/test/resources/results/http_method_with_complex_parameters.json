@@ -1,0 +1,168 @@
+{
+  "name": "User Management API",
+  "nodes": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174001",
+      "name": "User Management API",
+      "type": "SERVICE",
+      "belongsToGraph": [
+        "123e4567-e89b-12d3-a456-426614174001"
+      ],
+      "nodeDescription": "API для управления пользователями с комплексными параметрами",
+      "tags": [],
+      "documentationFileLinks": []
+    },
+    {
+      "id": "223e4567-e89b-12d3-a456-426614174002",
+      "name": "/users/{userId}",
+      "type": "HTTP",
+      "belongsToGraph": [
+        "123e4567-e89b-12d3-a456-426614174001"
+      ],
+      "nodeDescription": "Создает нового пользователя или обновляет существующего с использованием различных типов параметров",
+      "nodeUrl": "/users/{userId}",
+      "methodType": "POST",
+      "tags": [],
+      "documentationFileLinks": [],
+      "httpParameters": {
+        "pathParameters": [
+          {
+            "name": "userId",
+            "description": "Уникальный идентификатор пользователя",
+            "required": true,
+            "type": "string",
+            "schema": "{\n              \"type\": \"string\",\n              \"format\": \"uuid\"\n            }",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          }
+        ],
+        "queryParameters": [
+          {
+            "name": "includeDetails",
+            "description": "Включать ли детальную информацию в ответ",
+            "required": false,
+            "type": "string",
+            "schema": "{\"type\":\"string\",\"default\":\"false\",\"enum\":[\"true\",\"false\"]}",
+            "example": "true"
+          }
+        ],
+        "headerParameters": [
+          {
+            "name": "Authorization",
+            "description": "Токен авторизации",
+            "required": true,
+            "type": "string",
+            "schema": "{\"type\":\"string\"}",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+          }
+        ]
+      },
+      "httpRequestBody": {
+        "description": "Данные пользователя для создания или обновления",
+        "required": true,
+        "content": [
+          {
+            "mediaType": "application/json",
+            "schema": "{\"$ref\":\"#/components/schemas/UserCreateRequest\"}",
+            "example": "{\"name\":\"ИванИванов\",\"email\":\"ivan.ivanov@example.com\",\"age\":30,\"isActive\":true}",
+            "examples": []
+          }
+        ]
+      },
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": "Пользователь успешно обновлен",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\"$ref\":\"#/components/schemas/UserUpdateResponse\"}",
+              "example": "{\"id\":\"123e4567-e89b-12d3-a456-426614174000\",\"name\":\"ИванИванов\",\"email\":\"ivan.ivanov@example.com\",\"age\":30,\"isActive\":true,\"updatedAt\":\"2023-12-01T10:30:00Z\"}",
+              "examples": []
+            }
+          ]
+        },
+        {
+          "statusCode": "201",
+          "description": "Пользователь успешно создан",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\"$ref\":\"#/components/schemas/UserCreateResponse\"}",
+              "example": "{\"id\":\"456e7890-e89b-12d3-a456-426614174001\",\"name\":\"ИванИванов\",\"email\":\"ivan.ivanov@example.com\",\"age\":30,\"isActive\":true,\"createdAt\":\"2023-12-01T10:30:00Z\"}",
+              "examples": []
+            }
+          ]
+        },
+        {
+          "statusCode": "400",
+          "description": "Некорректные данные запроса",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\"$ref\":\"#/components/schemas/ErrorResponse\"}",
+              "example": "{\"error\":\"VALIDATION_ERROR\",\"message\":\"Переданынекорректныеданные\",\"details\":[\"Поле'email'должносодержатькорректныйemailадрес\",\"Поле'age'должнобытьбольше18\"]}",
+              "examples": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "323e4567-e89b-12d3-a456-426614174003",
+      "name": "UserCreateRequest",
+      "schema": "{\"required\":[\"email\",\"name\"],\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Имяпользователя\"},\"email\":{\"type\":\"string\",\"description\":\"Emailпользователя\",\"format\":\"email\"},\"age\":{\"maximum\":120,\"minimum\":18,\"type\":\"integer\",\"description\":\"Возрастпользователя\"},\"isActive\":{\"type\":\"boolean\",\"description\":\"Активенлипользователь\"}},\"description\":\"Данныедлясозданияилиобновленияпользователя\"}",
+      "tags": [],
+      "eventDescription": "Данные для создания или обновления пользователя",
+      "usageContext": [
+        "HTTP"
+      ]
+    },
+    {
+      "id": "423e4567-e89b-12d3-a456-426614174004",
+      "name": "UserUpdateResponse",
+      "schema": "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\",\"description\":\"Уникальныйидентификаторпользователя\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\",\"description\":\"Имяпользователя\"},\"email\":{\"type\":\"string\",\"description\":\"Emailпользователя\",\"format\":\"email\"},\"age\":{\"type\":\"integer\",\"description\":\"Возрастпользователя\"},\"isActive\":{\"type\":\"boolean\",\"description\":\"Активенлипользователь\"},\"updatedAt\":{\"type\":\"string\",\"description\":\"Времяпоследнегообновления\",\"format\":\"date-time\"}},\"description\":\"Ответприуспешномобновлениипользователя\"}",
+      "tags": [],
+      "eventDescription": "Ответ при успешном обновлении пользователя",
+      "usageContext": [
+        "HTTP"
+      ]
+    },
+    {
+      "id": "523e4567-e89b-12d3-a456-426614174005",
+      "name": "UserCreateResponse",
+      "schema": "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\",\"description\":\"Уникальныйидентификаторпользователя\",\"format\":\"uuid\"},\"name\":{\"type\":\"string\",\"description\":\"Имяпользователя\"},\"email\":{\"type\":\"string\",\"description\":\"Emailпользователя\",\"format\":\"email\"},\"age\":{\"type\":\"integer\",\"description\":\"Возрастпользователя\"},\"isActive\":{\"type\":\"boolean\",\"description\":\"Активенлипользователь\"},\"createdAt\":{\"type\":\"string\",\"description\":\"Времясоздания\",\"format\":\"date-time\"}},\"description\":\"Ответприуспешномсозданиипользователя\"}",
+      "tags": [],
+      "eventDescription": "Ответ при успешном создании пользователя",
+      "usageContext": [
+        "HTTP"
+      ]
+    },
+    {
+      "id": "623e4567-e89b-12d3-a456-426614174006",
+      "name": "ErrorResponse",
+      "schema": "{\"type\":\"object\",\"properties\":{\"error\":{\"type\":\"string\",\"description\":\"Кодошибки\"},\"message\":{\"type\":\"string\",\"description\":\"Сообщениеобошибке\"},\"details\":{\"type\":\"array\",\"description\":\"Деталиошибки\",\"items\":{\"type\":\"string\"}}},\"description\":\"Ответсошибкой\"}",
+      "tags": [],
+      "eventDescription": "Ответ с ошибкой",
+      "usageContext": [
+        "HTTP"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "id": "723e4567-e89b-12d3-a456-426614174007",
+      "fromId": "223e4567-e89b-12d3-a456-426614174002",
+      "toId": "123e4567-e89b-12d3-a456-426614174001",
+      "group": null,
+      "eventId": "323e4567-e89b-12d3-a456-426614174003",
+      "tags": []
+    }
+  ],
+  "errors": [],
+  "tags": []
+}

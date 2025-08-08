@@ -11,10 +11,11 @@ import org.openapitools.codegen.languages.MarkdownDocumentationCodegen;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pro.axenix_innovation.axenapi.web.generate.SpecificationMarkdownHandler;
+import pro.axenix_innovation.axenapi.web.generate.SpecificationMarkdownHandler;
 import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
 import pro.axenix_innovation.axenapi.web.model.*;
 import pro.axenix_innovation.axenapi.web.repository.MarkdownSpecificationRepository;
-import pro.axenix_innovation.axenapi.web.util.OpenAPIGenerator;
+import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,7 +87,7 @@ public class MarkdownSpecService {
 
         log.info(messageHelper.getMessage("axenapi.info.start.spec.gen.graph", graphDTO.getName()));
 
-        Map<String, OpenAPI> openAPISpecifications = OpenAPIGenerator.getOpenAPISpecifications(new EventGraphFacade(graphDTO));
+        Map<String, OpenAPI> openAPISpecifications = OpenApiGeneratorFacade.getOpenAPISpecifications(new EventGraphFacade(graphDTO));
 
         if (openAPISpecifications == null || openAPISpecifications.isEmpty()) {
             log.error(messageHelper.getMessage(ERROR_NO_YAML_CONTENT));
@@ -224,8 +225,40 @@ public class MarkdownSpecService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
+        // Проверяем, есть ли HTTP узлы в отфильтрованных узлах
+        boolean hasHttpNodeInFilteredNodes = filteredNodes.stream()
+                .anyMatch(node -> node.getType() == NodeDTO.TypeEnum.HTTP);
+
         List<EventDTO> filteredEvents = graph.getEvents().stream()
-                .filter(event -> event.getId() != null && usedEventIds.contains(event.getId()))
+                .filter(event -> {
+                    if (event.getId() == null) return false;
+                    
+                    // Включаем события, связанные через links
+                    if (usedEventIds.contains(event.getId())) return true;
+                    
+                    // Включаем события с контекстом использования HTTP, если есть HTTP узлы в отфильтрованных узлах
+                    if (hasHttpNodeInFilteredNodes && event.getUsageContext() != null && 
+                        event.getUsageContext().contains(EventUsageContextEnum.HTTP)) {
+                        return true;
+                    }
+                    
+                    // Также включаем события с тегом HTTP, если есть HTTP узлы в отфильтрованных узлах (для обратной совместимости)
+                    if (hasHttpNodeInFilteredNodes && event.getTags() != null && event.getTags().contains("HTTP")) {
+                        return true;
+                    }
+                    
+                    // Включаем HTTP события по наличию x-http-name в схеме, если есть HTTP узлы в отфильтрованных узлах
+                    if (hasHttpNodeInFilteredNodes && event.getSchema() != null && event.getSchema().contains("x-http-name")) {
+                        return true;
+                    }
+                    
+                    // Включаем события ти��а REQUEST и RESPONSE, если есть HTTP узлы в отфильтрованных узлах
+                    if (hasHttpNodeInFilteredNodes && event.getEventType() != null) {
+                        return true;
+                    }
+                    
+                    return false;
+                })
                 .collect(Collectors.collectingAndThen(
                         Collectors.toMap(
                                 EventDTO::getId,

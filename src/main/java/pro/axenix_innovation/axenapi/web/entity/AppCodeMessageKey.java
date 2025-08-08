@@ -94,6 +94,7 @@ public enum AppCodeMessageKey {
     WARN_ALL_ITEMS_HAD_ERRORS(60028, "axenapi.warn.all.items.had.errors"),
     WARN_FOUND_UNUSED_EVENTS(60029, "axenapi.warn.found.unused.events"),
     WARN_TOPIC_NODE_NOT_FOUND_DOC_LINK(60030, "axenapi.warn.topic.node.not.found.doc.link"),
+    WARN_GIT_REPOSITORY_NOT_FOUND(60031, "axenapi.warn.git.repository.not.found"),
 
     //////////////////////////////////////////--- RESPONSES ---/////////////////////////////////////////
 

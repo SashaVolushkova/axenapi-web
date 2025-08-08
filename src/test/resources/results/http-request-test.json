@@ -9,11 +9,11 @@
       "name": "HTTP Test Service",
       "type": "SERVICE",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
-      "methodType": null,
       "tags": [],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": null,
+      "httpRequestBody": null,
+      "httpResponses": []
     },
     {
       "id": "5bd7062e-0afa-4c84-a26d-f1b072fa2f50",
@@ -23,11 +23,41 @@
       "name": "/api/users",
       "type": "HTTP",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
       "methodType": "POST",
       "tags": [],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": {
+        "pathParameters": [],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": {
+        "description": null,
+        "required": true,
+        "content": [
+          {
+            "mediaType": "application/json",
+            "schema": "{\n  \"$ref\": \"#/components/schemas/CreateUserRequest\"\n}",
+            "example": null,
+            "examples": []
+          }
+        ]
+      },
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": "User created",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"$ref\": \"#/components/schemas/UserResponse\"\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "6bd7062e-0afa-4c84-a26d-f1b072fa2f51",
@@ -37,29 +67,59 @@
       "name": "/api/data",
       "type": "HTTP",
       "brokerType": null,
-      "requestBody": null,
-      "responseBody": null,
       "methodType": "GET",
       "tags": [],
-      "documentationFileLinks": []
+      "documentationFileLinks": [],
+      "httpParameters": {
+        "pathParameters": [],
+        "queryParameters": [],
+        "headerParameters": []
+      },
+      "httpRequestBody": null,
+      "httpResponses": [
+        {
+          "statusCode": "200",
+          "description": "Data retrieved",
+          "headers": [],
+          "content": [
+            {
+              "mediaType": "application/json",
+              "schema": "{\n  \"$ref\": \"#/components/schemas/DataResponse\"\n}",
+              "example": null,
+              "examples": []
+            }
+          ]
+        }
+      ]
     }
   ],
   "events": [
     {
       "id": "418afd8e-85a6-4539-9316-e986f0e96fdd",
-      "schema": "{\r\n  \"required\" : [ \"email\", \"name\" ],\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"name\" : {\r\n      \"type\" : \"string\"\r\n    },\r\n    \"email\" : {\r\n      \"type\" : \"string\"\r\n    }\r\n  }\r\n}",
+      "schema": "{\"required\":[\"email\",\"name\"],\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"}}}",
       "name": "CreateUserRequest",
       "tags": [],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
     },
     {
       "id": "518afd8e-85a6-4539-9316-e986f0e96fee",
-      "schema": "{\r\n  \"type\" : \"object\",\r\n  \"properties\" : {\r\n    \"data\" : {\r\n      \"type\" : \"array\",\r\n      \"items\" : {\r\n        \"type\" : \"string\"\r\n      }\r\n    }\r\n  }\r\n}",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"data\" : {\n      \"type\" : \"array\",\n      \"items\" : {\n        \"type\" : \"string\"\n      }\n    }\n  }\n}",
       "name": "DataResponse",
       "tags": [],
       "eventType": null,
-      "eventDescription": null
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
+    },
+    {
+      "id": "618afd8e-85a6-4539-9316-e986f0e96fcc",
+      "schema": "{\n  \"type\" : \"object\",\n  \"properties\" : {\n    \"id\" : {\n      \"type\" : \"string\"\n    },\n    \"name\" : {\n      \"type\" : \"string\"\n    },\n    \"email\" : {\n      \"type\" : \"string\"\n    }\n  }\n}",
+      "name": "UserResponse",
+      "tags": [],
+      "eventType": null,
+      "eventDescription": null,
+      "usageContext": ["HTTP"]
     }
   ],
   "links": [
@@ -76,7 +136,7 @@
       "fromId": "6bd7062e-0afa-4c84-a26d-f1b072fa2f51",
       "toId": "56196b0a-a244-4d83-85b7-1bb8c2adf97c",
       "group": null,
-      "eventId": "518afd8e-85a6-4539-9316-e986f0e96fee",
+      "eventId": null,
       "tags": []
     }
   ],

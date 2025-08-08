@@ -46,7 +46,8 @@ public class DefaultEventGraphBuilder implements EventGraphBuilder {
             }
         }
         
-        UUID serviceNodeUUID = OpenAPIProcessor.createServiceNode(eventGraph, title, serviceDocumentationLinks, serviceNodeId);
+        String description = info.getDescription();
+        UUID serviceNodeUUID = OpenAPIProcessor.createServiceNode(eventGraph, title, description, serviceDocumentationLinks, serviceNodeId);
         Map<String, EventDTO> createdEvents = new HashMap<>();
         
         if (openAPI.getPaths() != null) {
@@ -66,6 +67,9 @@ public class DefaultEventGraphBuilder implements EventGraphBuilder {
         }
         
         eventGraph.addAllTagsInGraph(allTags);
+        
+        // Пост-обработка для установки usageContext событий
+        OpenAPIProcessor.postProcessUsageContext(eventGraph);
         
         return eventGraph;
     }

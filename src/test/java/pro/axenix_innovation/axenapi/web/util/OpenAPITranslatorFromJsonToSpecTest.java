@@ -26,6 +26,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
 import pro.axenix_innovation.axenapi.web.model.LinkDTO;
 import pro.axenix_innovation.axenapi.web.model.NodeDTO;
+import pro.axenix_innovation.axenapi.web.util.openapi.generator.OpenApiGeneratorFacade;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +72,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(serviceNode2);
 
         // Act
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         // Assert
         assertEquals(2, result.size());
@@ -149,7 +150,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addLink(linkJMS);
 
         // Act
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         // Assert
         assertEquals(1, result.size());
@@ -203,7 +204,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addLink(link);
 
         // Act
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         // Assert
         assertEquals(1, result.size());
@@ -251,7 +252,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(httpNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));
@@ -288,7 +289,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(topicNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));
@@ -327,7 +328,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(topicNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));
@@ -365,7 +366,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(topicNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));
@@ -403,7 +404,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(topicNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));
@@ -442,7 +443,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(httpNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));
@@ -480,7 +481,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(httpNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));
@@ -518,7 +519,7 @@ public class OpenAPITranslatorFromJsonToSpecTest {
         eventGraph.addNode(httpNode);
         eventGraph.addLink(link);
 
-        Map<String, OpenAPI> result = OpenAPIGenerator.getOpenAPISpecifications(eventGraph);
+        Map<String, OpenAPI> result = OpenApiGeneratorFacade.getOpenAPISpecifications(eventGraph);
 
         assertEquals(1, result.size());
         assertTrue(result.containsKey("ServiceA"));

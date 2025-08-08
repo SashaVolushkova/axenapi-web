@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import pro.axenix_innovation.axenapi.web.TestHelper;
 import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
 import pro.axenix_innovation.axenapi.web.model.*;
 
@@ -85,7 +86,7 @@ public class AxenAPIControllerPostUploadTest {
         //read expected result from file resource
         Resource expectedFile = new ClassPathResource("results/" + caseName + ".json");
         EventGraphDTO expected = objectMapper.readValue(expectedFile.getInputStream(), EventGraphDTO.class);
-        deepCompare(expected, eventGraphDTO);
+        TestHelper.deepCompare(expected, eventGraphDTO);
     }
 
     private void testTwoIdenticalFilesUpload(String caseName) throws Exception {
@@ -115,7 +116,7 @@ public class AxenAPIControllerPostUploadTest {
 
         Resource expectedFile = new ClassPathResource("results/" + caseName + ".json");
         EventGraphDTO expected = objectMapper.readValue(expectedFile.getInputStream(), EventGraphDTO.class);
-        deepCompare(expected, eventGraphDTO);
+        TestHelper.deepCompare(expected, eventGraphDTO);
     }
 
 
@@ -211,168 +212,6 @@ public class AxenAPIControllerPostUploadTest {
         testFileUpload("http-request-test");
     }
 
-
-
-    public void deepCompare(EventGraphDTO expected, EventGraphDTO actual) {
-        EventGraphFacade expectedFacade = new EventGraphFacade(expected);
-        EventGraphFacade actualFacade = new EventGraphFacade(actual);
-
-        log.info("Actual graph - nodes: {}, links: {}", actual.getNodes().size(), actual.getLinks().size());
-
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            String actualGraphJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actual);
-            log.info("Full actual graph content:\n{}", actualGraphJson);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize actual graph to JSON", e);
-        }
-
-        log.info("Comparing graphs: expected={} vs actual={}", expected.getName(), actual.getName());
-
-        // --- TAGS ---
-        assertEquals(expected.getTags().size(), actual.getTags().size(),
-                "Tags count mismatch: expected " + expected.getTags().size() +
-                        ", but got " + actual.getTags().size());
-        assertTrue(expected.getTags().containsAll(actual.getTags()),
-                "Actual tags contain unexpected values: " + actual.getTags());
-        assertTrue(actual.getTags().containsAll(expected.getTags()),
-                "Actual tags missing expected values: " + expected.getTags());
-
-        // --- NAME ---
-        assertEquals(expected.getName(), actual.getName(),
-                "Graph name mismatch: expected '" + expected.getName() +
-                        "', but got '" + actual.getName() + "'");
-
-        // --- NODES ---
-        assertEquals(expected.getNodes().size(), actual.getNodes().size(),
-                "Node count mismatch: expected " + expected.getNodes().size() +
-                        " nodes, but found " + actual.getNodes().size());
-
-        log.info("Expected nodes count: {}, Actual nodes count: {}", expected.getNodes().size(), actual.getNodes().size());
-
-        Map<String, NodeDTO> actualNodesMap = actual.getNodes().stream()
-                .collect(Collectors.toMap(n -> n.getName() + n.getType() + n.getBrokerType() + n.getMethodType(), Function.identity()));
-
-        Map<UUID, NodeDTO> expectedNodesIdMap = expected.getNodes().stream()
-                .collect(Collectors.toMap(NodeDTO::getId, Function.identity()));
-        Map<UUID, NodeDTO> actualNodesIdMap = actual.getNodes().stream()
-                .collect(Collectors.toMap(NodeDTO::getId, Function.identity()));
-
-        for (NodeDTO expectedNode : expected.getNodes()) {
-            log.info("Checking expected node: {}", expectedNode);
-            NodeDTO actualNode = actualNodesMap.get(expectedNode.getName() + expectedNode.getType() + expectedNode.getBrokerType() + expectedNode.getMethodType());
-            assertNotNull(actualNode,
-                    "Missing node with name: " + expectedNode.getName() +
-                            ", type: " + expectedNode.getType() +
-                            ", brokerType: " + expectedNode.getBrokerType());
-            assertEquals(expectedNode.getType(), actualNode.getType(),
-                    "Node type mismatch for name: " + expectedNode.getName());
-            assertEquals(expectedNode.getBrokerType(), actualNode.getBrokerType(),
-                    "Node broker type mismatch for name: " + expectedNode.getName());
-
-            log.info("Node {} matched successfully", expectedNode.getName());
-
-            for (UUID btgExpected : expectedNode.getBelongsToGraph()) {
-                NodeDTO btgExpectedNode = expectedNodesIdMap.get(btgExpected);
-                boolean equalBtg = false;
-                for (UUID btgActual : actualNode.getBelongsToGraph()) {
-                    NodeDTO btgActualNode = actualNodesIdMap.get(btgActual);
-                    if (btgExpectedNode != null && btgActualNode != null) {
-                        if (btgExpectedNode.getName().equals(btgActualNode.getName()) &&
-                                btgActualNode.getBrokerType() == btgExpectedNode.getBrokerType() &&
-                                btgActualNode.getType() == btgExpectedNode.getType()) {
-                            equalBtg = true;
-                            break;
-                        }
-                    }
-                }
-                assertTrue(equalBtg,
-                        "BelongsToGraph mismatch for node name: " + expectedNode.getName());
-            }
-        }
-
-        // --- LINKS ---
-        assertEquals(expected.getLinks().size(), actual.getLinks().size(),
-                "Link count mismatch: expected " + expected.getLinks().size() +
-                        ", but got " + actual.getLinks().size());
-
-        log.info("Expected links count: {}, Actual links count: {}", expected.getLinks().size(), actual.getLinks().size());
-
-        Set<LinkDTO> actualLinksSet = new HashSet<>(actual.getLinks());
-        assertEquals(actual.getLinks().size(), actualLinksSet.size(),
-                "Duplicate links found in actual graph");
-
-        for (LinkDTO expectedLink : expected.getLinks()) {
-            NodeDTO fromNodeExpected = expectedNodesIdMap.get(expectedLink.getFromId());
-            NodeDTO toNodeExpected = expectedNodesIdMap.get(expectedLink.getToId());
-            EventDTO eventExpected = expectedFacade.getEventById(expectedLink.getEventId());
-
-            log.info("Checking link from {} to {} with event {}", fromNodeExpected, toNodeExpected, eventExpected);
-
-            boolean equalLink = false;
-            if (fromNodeExpected != null && toNodeExpected != null && eventExpected != null) {
-                for (LinkDTO actualLink : actualLinksSet) {
-                    assertNotNull(actualLink.getId(), "Link ID is null " + actualLink);
-                    NodeDTO fromNodeActual = actualNodesIdMap.get(actualLink.getFromId());
-                    NodeDTO toNodeActual = actualNodesIdMap.get(actualLink.getToId());
-                    EventDTO eventActual = actualFacade.getEventById(actualLink.getEventId());
-                    if (fromNodeActual != null && toNodeActual != null && eventActual != null) {
-                        if (fromNodeExpected.getName().equals(fromNodeActual.getName()) &&
-                                toNodeExpected.getName().equals(toNodeActual.getName()) &&
-                                eventExpected.getName().equals(eventActual.getName()) &&
-                                fromNodeExpected.getType().equals(fromNodeActual.getType()) &&
-                                toNodeExpected.getType().equals(toNodeActual.getType()) &&
-                                fromNodeExpected.getBrokerType() == fromNodeActual.getBrokerType() &&
-                                toNodeExpected.getBrokerType() == toNodeActual.getBrokerType()) {
-                            equalLink = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            assertTrue(equalLink,
-                    "Link mismatch from " + (fromNodeExpected != null ? fromNodeExpected.getName() : "unknown") +
-                            " to " + (toNodeExpected != null ? toNodeExpected.getName() : "unknown") +
-                            " with event " + (eventExpected != null ? eventExpected.getName() : "unknown"));
-        }
-
-        // --- EVENTS ---
-        assertEquals(expected.getEvents().size(), actual.getEvents().size(),
-                "Event count mismatch: expected " + expected.getEvents().size() +
-                        ", but got " + actual.getEvents().size());
-
-        log.info("Expected events count: {}, Actual events count: {}", expected.getEvents().size(), actual.getEvents().size());
-
-        for (EventDTO expectedEvent : expected.getEvents()) {
-            EventDTO actualEvent = actualFacade.getEvent(expectedEvent.getName());
-            assertNotNull(actualEvent,
-                    "No event with name: " + expectedEvent.getName());
-            assertEquals(expectedEvent.getName(), actualEvent.getName(),
-                    "Event name mismatch: expected '" + expectedEvent.getName() +
-                            "', but got '" + actualEvent.getName() + "'");
-            assertEquals(expectedEvent.getSchema().replaceAll("\\s+", ""), actualEvent.getSchema().replaceAll("\\s+", ""),
-                    "Event schema mismatch for key: " + expectedEvent.getName());
-        }
-
-        // --- ERRORS ---
-        assertEquals(expected.getErrors().size(), actual.getErrors().size(),
-                "Error count mismatch: expected " + expected.getErrors().size() +
-                        ", but got " + actual.getErrors().size());
-
-        log.info("Expected errors count: {}, Actual errors count: {}", expected.getErrors().size(), actual.getErrors().size());
-
-        Set<ErrorDTO> actualErrorsSet = new HashSet<>(actual.getErrors());
-        for (ErrorDTO expectedError : expected.getErrors()) {
-            assertTrue(actualErrorsSet.contains(expectedError),
-                    "Missing error: " + errorToString(expectedError));
-        }
-    }
-
-
-    private String errorToString(ErrorDTO error) {
-        return String.format("Error{filename=%s, error=%s}", error.getFileName(), error.getErrorMessage());
-    }
-
     @Test
     void testAddServiceToGraphPost_withValidYamlFileAndEmptyGraph_shouldReturnGraph() throws Exception {
         ClassPathResource resource = new ClassPathResource("axenapi-be.yml");
@@ -403,6 +242,12 @@ public class AxenAPIControllerPostUploadTest {
 
         String responseBody = result.getResponse().getContentAsString();
         log.info("Final graph JSON:\n" + responseBody);
+    }
+
+    @Test
+    public void testHttpMethodWithComplexParameters() throws Exception {
+        // Создаем тестовый HTTP метод с полной структурой параметров
+        testFileUpload("http_method_with_complex_parameters");
     }
 
 

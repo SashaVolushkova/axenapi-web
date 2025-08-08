@@ -4,6 +4,7 @@
   "nodes": [
     {
       "id": "12345678-90ab-cdef-1234-567890abcdef",
+      "nodeDescription": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
       "belongsToGraph": ["12345678-90ab-cdef-1234-567890abcdef"],
       "name": "service_no_common_consume_topics_common_events_common_outgoing_topics_1",
       "type": "SERVICE",
@@ -11,6 +12,7 @@
     },
     {
       "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "nodeDescription": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "service_no_common_consume_topics_common_events_common_outgoing_topics_2",
       "type": "SERVICE",
@@ -160,32 +162,38 @@
     {
       "id": "c3d4e5f6-7890-1234-5678-90abcdef012a",
       "name": "EventOutgoingKafka",
-      "schema": "{\"type\":\"object\",\"x-outgoing\":{\"topics\":[\"kafka/topicOutKafka\"]}}"
+      "schema": "{\"type\":\"object\",\"x-outgoing\":{\"topics\":[\"kafka/topicOutKafka\"]}}",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "bdc6803e-5395-45f2-aece-c359de3d3f0b",
       "name": "EventOutgoingRabbitMQ",
-      "schema": "{\"type\":\"object\",\"x-outgoing\":{\"topics\":[\"rabbitmq/topicOutRabbitMQ\"]}}"
+      "schema": "{\"type\":\"object\",\"x-outgoing\":{\"topics\":[\"rabbitmq/topicOutRabbitMQ\"]}}",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde1",
       "name": "EventOutgoingJMS",
-      "schema": "{\"type\":\"object\",\"x-outgoing\":{\"topics\":[\"jms/topicOutJMS\"]}}"
+      "schema": "{\"type\":\"object\",\"x-outgoing\":{\"topics\":[\"jms/topicOutJMS\"]}}",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde2",
       "name": "EventConsumeKafka",
-      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"kafka/topicConsumeKafka_2\"]}}"
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"kafka/topicConsumeKafka_2\"]}}",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde3",
       "name": "EventConsumeRabbitMQ",
-      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"rabbitmq/topicConsumeRabbitMQ_2\"]}}"
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"rabbitmq/topicConsumeRabbitMQ_2\"]}}",
+      "usageContext": ["ASYNC_MESSAGING"]
     },
     {
       "id": "a1b2c3d4-1234-5678-1234-567890abcde4",
       "name": "EventConsumeJMS",
-      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"jms/topicConsumeJMS_2\"]}}"
+      "schema": "{\"type\":\"object\",\"x-incoming\":{\"topics\":[\"jms/topicConsumeJMS_2\"]}}",
+      "usageContext": ["ASYNC_MESSAGING"]
     }
   ],
   "errors": []

@@ -4,6 +4,7 @@
   "nodes": [
     {
       "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "nodeDescription": "AxenAPI Specification for a service that consume an event from a single Kafka topic",
       "belongsToGraph": ["a1b2c3d4-e5f6-7890-1234-567890abcdef"],
       "name": "no_consumes_one_outgoing_no_broker_type_service",
       "type": "SERVICE",
@@ -29,7 +30,8 @@
     {
       "id": "c3d4e5f6-7890-1234-5678-90abcdef0123",
       "name": "EventOutgoing",
-      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            \"topic\"\n          ]\n        }\n      }"
+      "schema": "{\n        \"type\": \"object\",\n        \"x-outgoing\": {\n          \"topics\": [\n            \"topic\"\n          ]\n        }\n      }",
+      "usageContext": ["ASYNC_MESSAGING"]
     }
   ],
   "errors": []
