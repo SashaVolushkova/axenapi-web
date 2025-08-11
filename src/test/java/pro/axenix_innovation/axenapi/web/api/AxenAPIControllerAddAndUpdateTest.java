@@ -93,7 +93,9 @@ public class AxenAPIControllerAddAndUpdateTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        EventGraphDTO resultingGraph = objectMapper.readValue(addServiceResult.getResponse().getContentAsString(), EventGraphDTO.class);
+        String responseString = addServiceResult.getResponse().getContentAsString();
+        logger.info("Response from addServiceToGraph: {}", responseString);
+        EventGraphDTO resultingGraph = objectMapper.readValue(responseString, EventGraphDTO.class);
 
         // 6. Compare the graphs
         TestHelper.deepCompare(initialGraph, resultingGraph);
@@ -142,7 +144,9 @@ public class AxenAPIControllerAddAndUpdateTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        EventGraphDTO resultingGraph = objectMapper.readValue(result.getResponse().getContentAsString(), EventGraphDTO.class);
+        String responseString = result.getResponse().getContentAsString();
+        logger.info("Response from updateServiceSpecification: {}", responseString);
+        EventGraphDTO resultingGraph = objectMapper.readValue(responseString, EventGraphDTO.class);
 
         // 5. Compare the graphs
         TestHelper.deepCompare(initialGraph, resultingGraph);

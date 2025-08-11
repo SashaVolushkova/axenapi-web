@@ -82,7 +82,15 @@
     },
     {
       "fromId": "b3e3e3e3-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
-      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323"
+      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323",
+      "eventId": "f1a2b3c4-d5e6-f1a2-b3c4-d5e6f1a2b3c4",
+      "tags": ["HTTP"]
+    },
+    {
+      "fromId": "b3e3e3e3-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
+      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323",
+      "eventId": "a2b3c4d5-e6f1-a2b3-c4d5-e6f1a2b3c4d5",
+      "tags": ["HTTP"]
     }
   ],
   "events": [
@@ -114,12 +122,14 @@
     {
       "id": "f1a2b3c4-d5e6-f1a2-b3c4-d5e6f1a2b3c4",
       "name": "UserDTO",
-      "schema": "{\"type\": \"object\"}"
+      "schema": "{\"type\": \"object\"}",
+      "tags": ["HTTP"]
     },
     {
       "id": "a2b3c4d5-e6f1-a2b3-c4d5-e6f1a2b3c4d5",
       "name": "Error",
-      "schema": "{\"type\": \"object\"}"
+      "schema": "{\"type\": \"object\"}",
+      "tags": ["HTTP"]
     }
   ]
 }

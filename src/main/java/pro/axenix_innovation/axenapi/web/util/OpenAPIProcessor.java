@@ -129,20 +129,33 @@ public class OpenAPIProcessor {
                             }
                         }
                     }
-                    if (linkEvent == null) {
-                        ApiResponse response = operation.getResponses() != null ? operation.getResponses().get("200") : null;
-                        if (response != null && response.getContent() != null) {
-                            MediaType media = response.getContent().get("application/json");
-                            if (media != null && media.getSchema() != null) {
-                                Schema<?> schema = media.getSchema();
-                                EventDTO event = resolveEventFromSchema(schema, components, createdEvents);
-                                if (event != null) {
-                                    eventGraph.addEvent(event);
-                                    linkEvent = event;
+                    if (operation.getResponses() != null) {
+                        for (Map.Entry<String, ApiResponse> responseEntry : operation.getResponses().entrySet()) {
+                            ApiResponse response = responseEntry.getValue();
+                            if (response.getContent() != null) {
+                                MediaType media = response.getContent().get("application/json");
+                                if (media != null && media.getSchema() != null) {
+                                    Schema<?> schema = media.getSchema();
+                                    EventDTO event = resolveEventFromSchema(schema, components, createdEvents);
+                                    if (event != null) {
+                                        eventGraph.addEvent(event);
+                                        if (event.getTags() == null) {
+                                            event.setTags(new HashSet<>());
+                                        }
+                                        if (pathTags != null && !pathTags.isEmpty()) {
+                                            event.getTags().addAll(pathTags);
+                                        }
+                                        event.getTags().add("HTTP");
+
+                                        for (NodeDTO nodeDTO : httpNodes) {
+                                            createHttpLink(nodeDTO, serviceNode, event, eventGraph);
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+
                     if (linkEvent != null) {
                         if (linkEvent.getTags() == null) {
                             linkEvent.setTags(new HashSet<>());
@@ -157,7 +170,7 @@ public class OpenAPIProcessor {
                         for (NodeDTO nodeDTO : httpNodes) {
                             createHttpLink(nodeDTO, serviceNode, linkEvent, eventGraph);
                         }
-                    } else {
+                    } else if (operation.getResponses() == null || operation.getResponses().isEmpty()){
                         for (NodeDTO nodeDTO : httpNodes) {
                             createHttpLink(nodeDTO, serviceNode, null, eventGraph);
                         }
@@ -612,10 +625,11 @@ public class OpenAPIProcessor {
                                         List<String> documentationLinks) {
         NodeDTO nodeTopic = eventGraph.getNode(brokerInfo.getTopic(), TOPIC, brokerInfo.getBrokerType());
         if (nodeTopic == null) {
-            Set<String> tags = Collections.emptySet();
+            Set<String> tags = new HashSet<>(brokerInfo.getTags());
             if (linkEvent != null) {
-                tags = topicTags.getOrDefault(brokerInfo.getTopic() + linkEvent.getName(), Collections.emptySet());
+                tags.addAll(topicTags.getOrDefault(brokerInfo.getTopic() + linkEvent.getName(), Collections.emptySet()));
             }
+
             nodeTopic = NodeDTO.builder()
                     .id(UUID.randomUUID())
                     .type(TOPIC)
@@ -634,13 +648,20 @@ public class OpenAPIProcessor {
 
         String group = consumerGroup.get(brokerInfo.getTopic());
 
-        LinkDTO newLink = LinkDTO.builder()
-                .id(UUID.randomUUID())
-                .eventId(linkEvent != null ? linkEvent.getId() : null)
-                .toId(serviceNode.getId())
-                .fromId(nodeTopic.getId())
-                .group(group)
-                .build();
+        LinkDTO newLink = new LinkDTO();
+        newLink.setId(UUID.randomUUID());
+        newLink.setEventId(linkEvent != null ? linkEvent.getId() : null);
+        newLink.setGroup(group);
+        newLink.setTags(brokerInfo.getTags());
+
+        if (brokerInfo.isIncoming()) {
+            newLink.setFromId(nodeTopic.getId());
+            newLink.setToId(serviceNode.getId());
+        } else {
+            newLink.setFromId(serviceNode.getId());
+            newLink.setToId(nodeTopic.getId());
+        }
+
         eventGraph.addLink(newLink);
     }
 
