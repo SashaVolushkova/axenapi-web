@@ -1,0 +1,120 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Complex-Service",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/kafka/group1/incoming-topic/IncomingEvent": {
+      "post": {
+        "x-incoming": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/kafka/group2/outgoing-topic/UserCreatedEvent": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/rabbitmq/rabbit-topic/RabbitEvent": {
+      "post": {
+        "x-incoming": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/jms/jms-topic/JmsEvent": {
+      "post": {
+        "x-incoming": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/undefined_broker/undefined-topic/UndefinedEvent": {
+      "post": {
+        "x-incoming": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "IncomingEvent": {
+        "type": "object"
+      },
+      "UserCreatedEvent": {
+        "type": "object"
+      },
+      "RabbitEvent": {
+        "type": "object"
+      },
+      "JmsEvent": {
+        "type": "object"
+      },
+      "UndefinedEvent": {
+        "type": "object"
+      },
+      "UserDTO": {
+        "type": "object"
+      },
+      "Error": {
+        "type": "object"
+      }
+    }
+  }
+}
