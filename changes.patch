@@ -1,0 +1,435 @@
+From 46522bfa7321a66b359d7ffec2b2c80c8a87aea4 Mon Sep 17 00:00:00 2001
+From: "google-labs-jules[bot]" <161369871+google-labs-jules[bot]@users.noreply.github.com>
+Date: Mon, 11 Aug 2025 14:56:05 +0000
+Subject: [PATCH] Apply patch /tmp/3335828b-9aba-4cac-adce-95dce2f04475.patch
+
+---
+ gradlew                                       |   0
+ .../AxenAPIControllerAddAndUpdateTest.java    | 150 ++++++++++++++++++
+ .../results/complex_service_graph.json        | 125 +++++++++++++++
+ .../specs/json/complex_service_spec.json      | 120 ++++++++++++++
+ 4 files changed, 395 insertions(+)
+ mode change 100644 => 100755 gradlew
+ create mode 100644 src/test/java/pro/axenix_innovation/axenapi/web/api/AxenAPIControllerAddAndUpdateTest.java
+ create mode 100644 src/test/resources/results/complex_service_graph.json
+ create mode 100644 src/test/resources/specs/json/complex_service_spec.json
+
+diff --git a/gradlew b/gradlew
+old mode 100644
+new mode 100755
+diff --git a/src/test/java/pro/axenix_innovation/axenapi/web/api/AxenAPIControllerAddAndUpdateTest.java b/src/test/java/pro/axenix_innovation/axenapi/web/api/AxenAPIControllerAddAndUpdateTest.java
+new file mode 100644
+index 0000000..52a2bd8
+--- /dev/null
++++ b/src/test/java/pro/axenix_innovation/axenapi/web/api/AxenAPIControllerAddAndUpdateTest.java
+@@ -0,0 +1,150 @@
++package pro.axenix_innovation.axenapi.web.api;
++
++import com.fasterxml.jackson.databind.JsonNode;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import org.junit.jupiter.api.Test;
++import org.springframework.http.MediaType;
++import org.springframework.mock.web.MockMultipartFile;
++import org.springframework.test.web.servlet.MvcResult;
++import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
++import pro.axenix_innovation.axenapi.web.model.GetServiceSpecificationPostRequest;
++import pro.axenix_innovation.axenapi.web.TestHelper;
++import pro.axenix_innovation.axenapi.web.model.UpdateServiceSpecificationPostRequest;
++
++import java.io.InputStream;
++import java.nio.charset.StandardCharsets;
++import java.util.ArrayList;
++import java.util.List;
++
++import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
++import org.springframework.boot.test.context.SpringBootTest;
++import org.springframework.test.web.servlet.MockMvc;
++import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
++import pro.axenix_innovation.axenapi.web.model.ErrorDTO;
++import pro.axenix_innovation.axenapi.web.model.EventDTO;
++import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
++import pro.axenix_innovation.axenapi.web.model.LinkDTO;
++import pro.axenix_innovation.axenapi.web.model.NodeDTO;
++
++import java.util.HashSet;
++import java.util.Map;
++import java.util.Set;
++import java.util.UUID;
++import java.util.function.Function;
++import java.util.stream.Collectors;
++
++import static org.junit.jupiter.api.Assertions.*;
++
++@SpringBootTest
++@AutoConfigureMockMvc
++public class AxenAPIControllerAddAndUpdateTest {
++
++    private static final Logger logger = LoggerFactory.getLogger(AxenAPIControllerAddAndUpdateTest.class);
++
++    @Autowired
++    private MockMvc mockMvc;
++
++    @Autowired
++    private ObjectMapper objectMapper;
++
++    @Test
++    void testAddServiceToGraph() throws Exception {
++        // 1. Load the initial graph
++        EventGraphDTO initialGraph;
++        try (InputStream is = getClass().getClassLoader().getResourceAsStream("results/complex_service_graph.json")) {
++            assertNotNull(is, "Cannot find complex_service_graph.json");
++            initialGraph = objectMapper.readValue(is, EventGraphDTO.class);
++        }
++
++        NodeDTO serviceNode = initialGraph.getNodes().stream()
++                .filter(node -> node.getType() == NodeDTO.TypeEnum.SERVICE)
++                .findFirst()
++                .orElseThrow(() -> new AssertionError("Service node not found in the initial graph"));
++
++        // 2. Read the service specification from file
++        String specification;
++        try (InputStream is = getClass().getClassLoader().getResourceAsStream("specs/json/complex_service_spec.json")) {
++            assertNotNull(is, "Cannot find complex_service_spec.json");
++            specification = new String(is.readAllBytes(), StandardCharsets.UTF_8);
++        }
++
++        // 3. Create a MockMultipartFile from the specification
++        MockMultipartFile specFile = new MockMultipartFile(
++                "files",
++                "complex_service_spec.json",
++                MediaType.APPLICATION_JSON_VALUE,
++                specification.getBytes(StandardCharsets.UTF_8)
++        );
++
++        // 4. Create an empty EventGraphDTO
++        String emptyGraphJson = "{}";
++        MockMultipartFile eventGraphFile = new MockMultipartFile("eventGraph", "eventGraph.json",
++                MediaType.APPLICATION_JSON_VALUE, emptyGraphJson.getBytes(StandardCharsets.UTF_8));
++
++
++        // 5. Call addServiceToGraph
++        MvcResult addServiceResult = mockMvc.perform(MockMvcRequestBuilders.multipart("/addServiceToGraph")
++                        .file(specFile)
++                        .file(eventGraphFile))
++                .andExpect(status().isOk())
++                .andReturn();
++
++        EventGraphDTO resultingGraph = objectMapper.readValue(addServiceResult.getResponse().getContentAsString(), EventGraphDTO.class);
++
++        // 6. Compare the graphs
++        TestHelper.deepCompare(initialGraph, resultingGraph);
++    }
++
++    @Test
++    void testUpdateServiceSpecification() throws Exception {
++        // 1. Load the initial graph
++        EventGraphDTO initialGraph;
++        try (InputStream is = getClass().getClassLoader().getResourceAsStream("results/complex_service_graph.json")) {
++            assertNotNull(is, "Cannot find complex_service_graph.json");
++            initialGraph = objectMapper.readValue(is, EventGraphDTO.class);
++        }
++
++        NodeDTO serviceNode = initialGraph.getNodes().stream()
++                .filter(node -> node.getType() == NodeDTO.TypeEnum.SERVICE)
++                .findFirst()
++                .orElseThrow(() -> new AssertionError("Service node not found in the initial graph"));
++
++        // 2. Read the service specification from file
++        String specification;
++        try (InputStream is = getClass().getClassLoader().getResourceAsStream("specs/json/complex_service_spec.json")) {
++            assertNotNull(is, "Cannot find complex_service_spec.json");
++            specification = new String(is.readAllBytes(), StandardCharsets.UTF_8);
++        }
++
++        // 3. Create a new EventGraphDTO with only the service node
++        EventGraphDTO graphToUpdate = new EventGraphDTO();
++        graphToUpdate.setName("Graph-To-Update");
++        graphToUpdate.addNodesItem(NodeDTO.builder()
++                .id(serviceNode.getId())
++                .name(serviceNode.getName())
++                .type(NodeDTO.TypeEnum.SERVICE)
++                .belongsToGraph(new ArrayList<>(List.of(serviceNode.getId())))
++                .build());
++
++        // 4. Call updateServiceSpecification
++        UpdateServiceSpecificationPostRequest request = new UpdateServiceSpecificationPostRequest();
++        request.setEventGraph(graphToUpdate);
++        request.setServiceNodeId(serviceNode.getId());
++        request.setSpecification(specification);
++
++        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/updateServiceSpecification")
++                        .contentType(MediaType.APPLICATION_JSON)
++                        .content(objectMapper.writeValueAsString(request)))
++                .andExpect(status().isOk())
++                .andReturn();
++
++        EventGraphDTO resultingGraph = objectMapper.readValue(result.getResponse().getContentAsString(), EventGraphDTO.class);
++
++        // 5. Compare the graphs
++        TestHelper.deepCompare(initialGraph, resultingGraph);
++    }
++}
+diff --git a/src/test/resources/results/complex_service_graph.json b/src/test/resources/results/complex_service_graph.json
+new file mode 100644
+index 0000000..d42044e
+--- /dev/null
++++ b/src/test/resources/results/complex_service_graph.json
+@@ -0,0 +1,125 @@
++{
++  "name": "Complex-Service-Graph",
++  "tags": [],
++  "nodes": [
++    {
++      "id": "a59a7295-81a4-4475-8e54-7f41538a5323",
++      "name": "Complex-Service",
++      "type": "SERVICE",
++      "belongsToGraph": ["a59a7295-81a4-4475-8e54-7f41538a5323"]
++    },
++    {
++      "id": "f516d411-9152-40e1-950c-1823a1a36861",
++      "name": "incoming-topic",
++      "type": "TOPIC",
++      "brokerType": "KAFKA",
++      "belongsToGraph": ["a59a7295-81a4-4475-8e54-7f41538a5323"]
++    },
++    {
++      "id": "27b7f16a-d464-448e-a9b0-1335b8979144",
++      "name": "outgoing-topic",
++      "type": "TOPIC",
++      "brokerType": "KAFKA",
++      "belongsToGraph": ["a59a7295-81a4-4475-8e54-7f41538a5323"]
++    },
++    {
++      "id": "1e3a792c-0535-4de3-a642-63b536be0b53",
++      "name": "rabbit-topic",
++      "type": "TOPIC",
++      "brokerType": "RABBITMQ",
++      "belongsToGraph": ["a59a7295-81a4-4475-8e54-7f41538a5323"]
++    },
++    {
++      "id": "d0e1b3d1-4b1e-4b6b-871d-5b3a3d6a4b1e",
++      "name": "jms-topic",
++      "type": "TOPIC",
++      "brokerType": "JMS",
++      "belongsToGraph": ["a59a7295-81a4-4475-8e54-7f41538a5323"]
++    },
++    {
++      "id": "c1f7a7b8-2a7e-4e4e-9e1e-2a7e4e4e9e1e",
++      "name": "undefined-topic",
++      "type": "TOPIC",
++      "brokerType": "UNDEFINED",
++      "belongsToGraph": ["a59a7295-81a4-4475-8e54-7f41538a5323"]
++    },
++    {
++      "id": "b3e3e3e3-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
++      "name": "/user/{id}",
++      "type": "HTTP",
++      "methodType": "GET",
++      "nodeUrl": "/user/{id}",
++      "belongsToGraph": ["a59a7295-81a4-4475-8e54-7f41538a5323"]
++    }
++  ],
++  "links": [
++    {
++      "fromId": "f516d411-9152-40e1-950c-1823a1a36861",
++      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323",
++      "group": "group1",
++      "eventId": "a1b2c3d4-e5f6-a1b2-c3d4-e5f6a1b2c3d4"
++    },
++    {
++      "fromId": "a59a7295-81a4-4475-8e54-7f41538a5323",
++      "toId": "27b7f16a-d464-448e-a9b0-1335b8979144",
++      "group": "group2",
++      "eventId": "b1c2d3e4-f5a6-b1c2-d3e4-f5a6b1c2d3e4"
++    },
++    {
++      "fromId": "1e3a792c-0535-4de3-a642-63b536be0b53",
++      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323",
++      "eventId": "c1d2e3f4-a5b6-c1d2-e3f4-a5b6c1d2e3f4"
++    },
++    {
++      "fromId": "d0e1b3d1-4b1e-4b6b-871d-5b3a3d6a4b1e",
++      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323",
++      "eventId": "d1e2f3a4-b5c6-d1e2-f3a4-b5c6d1e2f3a4"
++    },
++    {
++      "fromId": "c1f7a7b8-2a7e-4e4e-9e1e-2a7e4e4e9e1e",
++      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323",
++      "eventId": "e1f2a3b4-c5d6-e1f2-a3b4-c5d6e1f2a3b4"
++    },
++    {
++      "fromId": "b3e3e3e3-3e3e-3e3e-3e3e-3e3e3e3e3e3e",
++      "toId": "a59a7295-81a4-4475-8e54-7f41538a5323"
++    }
++  ],
++  "events": [
++    {
++      "id": "a1b2c3d4-e5f6-a1b2-c3d4-e5f6a1b2c3d4",
++      "name": "IncomingEvent",
++      "schema": "{\"type\": \"object\"}"
++    },
++    {
++      "id": "b1c2d3e4-f5a6-b1c2-d3e4-f5a6b1c2d3e4",
++      "name": "UserCreatedEvent",
++      "schema": "{\"type\": \"object\"}"
++    },
++    {
++      "id": "c1d2e3f4-a5b6-c1d2-e3f4-a5b6c1d2e3f4",
++      "name": "RabbitEvent",
++      "schema": "{\"type\": \"object\"}"
++    },
++    {
++      "id": "d1e2f3a4-b5c6-d1e2-f3a4-b5c6d1e2f3a4",
++      "name": "JmsEvent",
++      "schema": "{\"type\": \"object\"}"
++    },
++    {
++      "id": "e1f2a3b4-c5d6-e1f2-a3b4-c5d6e1f2a3b4",
++      "name": "UndefinedEvent",
++      "schema": "{\"type\": \"object\"}"
++    },
++    {
++      "id": "f1a2b3c4-d5e6-f1a2-b3c4-d5e6f1a2b3c4",
++      "name": "UserDTO",
++      "schema": "{\"type\": \"object\"}"
++    },
++    {
++      "id": "a2b3c4d5-e6f1-a2b3-c4d5-e6f1a2b3c4d5",
++      "name": "Error",
++      "schema": "{\"type\": \"object\"}"
++    }
++  ]
++}
+diff --git a/src/test/resources/specs/json/complex_service_spec.json b/src/test/resources/specs/json/complex_service_spec.json
+new file mode 100644
+index 0000000..9152c45
+--- /dev/null
++++ b/src/test/resources/specs/json/complex_service_spec.json
+@@ -0,0 +1,120 @@
++{
++  "openapi": "3.0.1",
++  "info": {
++    "title": "Complex-Service",
++    "version": "1.0.0"
++  },
++  "tags": [],
++  "paths": {
++    "/kafka/group1/incoming-topic/IncomingEvent": {
++      "post": {
++        "x-incoming": true,
++        "responses": {
++          "200": {
++            "description": "OK"
++          }
++        }
++      }
++    },
++    "/kafka/group2/outgoing-topic/UserCreatedEvent": {
++      "post": {
++        "responses": {
++          "200": {
++            "description": "OK"
++          }
++        }
++      }
++    },
++    "/rabbitmq/rabbit-topic/RabbitEvent": {
++      "post": {
++        "x-incoming": true,
++        "responses": {
++          "200": {
++            "description": "OK"
++          }
++        }
++      }
++    },
++    "/jms/jms-topic/JmsEvent": {
++      "post": {
++        "x-incoming": true,
++        "responses": {
++          "200": {
++            "description": "OK"
++          }
++        }
++      }
++    },
++    "/undefined_broker/undefined-topic/UndefinedEvent": {
++      "post": {
++        "x-incoming": true,
++        "responses": {
++          "200": {
++            "description": "OK"
++          }
++        }
++      }
++    },
++    "/user/{id}": {
++      "get": {
++        "parameters": [
++          {
++            "name": "id",
++            "in": "path",
++            "required": true,
++            "schema": {
++              "type": "string"
++            }
++          }
++        ],
++        "responses": {
++          "200": {
++            "description": "OK",
++            "content": {
++              "application/json": {
++                "schema": {
++                  "$ref": "#/components/schemas/UserDTO"
++                }
++              }
++            }
++          },
++          "400": {
++            "description": "Bad Request",
++            "content": {
++              "application/json": {
++                "schema": {
++                  "$ref": "#/components/schemas/Error"
++                }
++              }
++            }
++          }
++        }
++      }
++    }
++  },
++  "components": {
++    "schemas": {
++      "IncomingEvent": {
++        "type": "object"
++      },
++      "UserCreatedEvent": {
++        "type": "object"
++      },
++      "RabbitEvent": {
++        "type": "object"
++      },
++      "JmsEvent": {
++        "type": "object"
++      },
++      "UndefinedEvent": {
++        "type": "object"
++      },
++      "UserDTO": {
++        "type": "object"
++      },
++      "Error": {
++        "type": "object"
++      }
++    }
++  }
++}
++--
++2.50.1
++
