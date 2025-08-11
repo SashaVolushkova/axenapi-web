@@ -1,8 +1,17 @@
 package pro.axenix_innovation.axenapi.web;
 
 import pro.axenix_innovation.axenapi.web.graph.EventGraphFacade;
+import pro.axenix_innovation.axenapi.web.model.EventDTO;
+import pro.axenix_innovation.axenapi.web.model.EventGraphDTO;
+import pro.axenix_innovation.axenapi.web.model.LinkDTO;
+import pro.axenix_innovation.axenapi.web.model.NodeDTO;
 import pro.axenix_innovation.axenapi.web.model.*;
 
+
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
