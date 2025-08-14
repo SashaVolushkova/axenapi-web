@@ -20,6 +20,12 @@ configurations {
     }
 }
 
+configurations.all {
+    exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-core'
+    exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-el'
+    exclude group: 'org.apache.tomcat.embed', module: 'tomcat-embed-websocket'
+}
+
 repositories {
 //    mavenCentral()
     maven {
@@ -57,17 +63,24 @@ dependencies {
     implementation 'net.datafaker:datafaker:2.0.2'
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema:2.15.0'
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    implementation('org.springframework.boot:spring-boot-starter-jetty') {
+        exclude group: 'org.apache.tomcat', module: 'tomcat-embed-el'
+    }
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
 
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.5'
     implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 
     // Spring boot websocket
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation('org.springframework.boot:spring-boot-starter-websocket') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
     testImplementation("org.mockito:mockito-core:5.15.2")
